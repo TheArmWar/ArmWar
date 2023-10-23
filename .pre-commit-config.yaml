@@ -1,16 +1,26 @@
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0
     hooks:
-    -   id: end-of-file-fixer
+      - id: end-of-file-fixer
         stages: [commit]
-    -   id: check-added-large-files
+      - id: check-added-large-files
         stages: [commit]
--   repo: local
+  - repo: local
     hooks:
-    -   id: commit-convention
+      - id: commit-convention
         name: Commit convention
         description: Check if commit message observe the commit convention
         language: system
         entry: ./others/check_commit_convention.sh
         stages: [commit-msg]
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.0.3
+    hooks:
+      - id: prettier
+        exclude: ^.github/
+        name: Vue Prettier
+        stages: [commit]
+        additional_dependencies:
+          - prettier
+          - vue
