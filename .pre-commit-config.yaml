@@ -1,0 +1,16 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+    -   id: end-of-file-fixer
+        stages: [commit]
+    -   id: check-added-large-files
+        stages: [commit]
+-   repo: local
+    hooks:
+    -   id: commit-convention
+        name: Commit convention
+        description: Check if commit message observe the commit convention
+        language: system
+        entry: ./others/check_commit_convention.sh
+        stages: [commit-msg]
