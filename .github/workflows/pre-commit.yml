@@ -15,4 +15,4 @@ jobs:
           python-versions: "3.10"
           cache: "pip"
       - run: pip install pre-commit
-      - uses: pre-commit/actions@v1
+      - uses: pre-commit/actions@v3.0.0
