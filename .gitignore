@@ -1,0 +1,45 @@
+# Editor directories and files
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.vite*~
+\#*\#
+.\#*
+.vscode
+
+# Bin
+*.o
+*.a
+*.so
+*.d
+*.out
+
+# Test suite
+__pycache__
+*.pyc
+
+# Build
+/.pre-commit-config.yaml
+
+# Nix
+/result
+
+# ?
+.DS_Store
+node_modules
+/dist
+
+# Local env files
+.env.local
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
