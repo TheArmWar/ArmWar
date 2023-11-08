@@ -115,5 +115,3 @@ int command(armwar_StatedCommand command, Adafruit_PWMServoDriver pwm) {
     break;
   }
 }
-
-

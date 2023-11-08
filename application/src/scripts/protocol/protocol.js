@@ -1,5 +1,5 @@
 /* Imports */
-import { load } from "protobufjs"
+import { load } from "protobufjs";
 
 /**
  * @enum CommandType
@@ -16,11 +16,11 @@ export const CommandType = {
   RotateCcw: 7,
   Grab: 8,
   Release: 9,
-}
+};
 
 /**
  * @enum MessageType
- * List of the different protobuf messages (enum) 
+ * List of the different protobuf messages (enum)
  */
 export const MessageType = {
   CommandResponse: { id: 0, str: "CommandResponse" },
@@ -34,8 +34,8 @@ export const MessageType = {
   SpannedCommand: { id: 8, str: "SpannedCommand" },
   SpannedCommandSequence: { id: 9, str: "SpannedCommandSequence" },
   ArmCommand: { id: 10, str: "ArmCommand" },
-  Demo: {id: 11, str: "Demo" },
-}
+  Demo: { id: 11, str: "Demo" },
+};
 
 /**
  * @class Protocol
@@ -57,17 +57,17 @@ export class Protocol {
   constructor(protobuf, protocolPath) {
     /* Retrieves protocol name through the given path to be able to build
        the message names */
-    const splittedPath = protocolPath.split("/")
-    const protocolName = splittedPath[splittedPath.length - 1].split(".")[0]
+    const splittedPath = protocolPath.split("/");
+    const protocolName = splittedPath[splittedPath.length - 1].split(".")[0];
 
-    this.protobuf = protobuf
-    this.messages = []
-    
+    this.protobuf = protobuf;
+    this.messages = [];
+
     /* Retrieves the messages from the protocol file */
     for (var messageType in MessageType) {
-      const messageName = protocolName + "." + messageType
-      const message = this.protobuf.lookupType(messageName)
-      this.messages.push(message)
+      const messageName = protocolName + "." + messageType;
+      const message = this.protobuf.lookupType(messageName);
+      this.messages.push(message);
     }
 
     this.uint8Encoder = new TextEncoder();
@@ -80,28 +80,29 @@ export class Protocol {
    * @returns Protocol
    */
   static async load(protocolPath) {
-    // - Process async 
-    const protobuf = await load(protocolPath); 
+    // - Process async
+    const protobuf = await load(protocolPath);
 
     // - Call the constructor
-    return new Protocol(protobuf, protocolPath)
+    return new Protocol(protobuf, protocolPath);
   }
 
   /**
    * @private @method
    * Find in messages array the message matching messageType or throw an error
-   * @param {@enum MessageType} messageType 
+   * @param {@enum MessageType} messageType
    * @returns Protobuf message
    */
   #getMessage(messageType) {
     /* Check if the messageType exists */
     if (messageType >= Object.keys(messageType).length) {
-      throw new Error("Invalid argument, messageType" +  messageType.str +
-       "does not exists")
+      throw new Error(
+        "Invalid argument, messageType" + messageType.str + "does not exists",
+      );
     }
 
     /* Return the matching message */
-    return this.messages[messageType.id]
+    return this.messages[messageType.id];
   }
 
   /**
@@ -114,19 +115,21 @@ export class Protocol {
    */
   encode(messageType, object) {
     /* Gets the matching message */
-    const message = this.#getMessage(messageType) 
+    const message = this.#getMessage(messageType);
 
     /* Checks object validity depending on the messageType */
     if (message.verify(object)) {
-      throw new Error("Invalid argument, given object doesn't satisfy message " 
-        + messageType.str)
+      throw new Error(
+        "Invalid argument, given object doesn't satisfy message " +
+          messageType.str,
+      );
     }
 
     /* Create the payload (not encoded) of the object */
-    const payload = message.create(object)
+    const payload = message.create(object);
 
     /* Returns the encoded payload */
-    return message.encode(payload).finish()
+    return message.encode(payload).finish();
   }
 
   /**
@@ -139,12 +142,12 @@ export class Protocol {
    */
   decode(messageType, payload) {
     /* Gets the matching message */
-    const message = this.#getMessage(messageType) 
+    const message = this.#getMessage(messageType);
 
     /* Encode the payload as Uint8 to be decoded by protobuf */
-    const uint8Message = this.uint8Encoder.encode(payload)
+    const uint8Message = this.uint8Encoder.encode(payload);
 
     /* Return the decoded message */
-    return message.decode(uint8Message)
+    return message.decode(uint8Message);
   }
 }

@@ -1,48 +1,59 @@
 <script setup scoped>
-import { ref } from 'vue'
-import { defineProps, getCurrentInstance } from 'vue'
-const { emit } = getCurrentInstance()
-import play_icon from '@/assets/play_icon.png'
-import chevron_icon from '@/assets/chevron_icon.png'
-import delete_icon from '@/assets/delete_icon.png'
+import { ref } from "vue";
+import { defineProps, getCurrentInstance } from "vue";
+const { emit } = getCurrentInstance();
+import play_icon from "@/assets/play_icon.png";
+import chevron_icon from "@/assets/chevron_icon.png";
+import delete_icon from "@/assets/delete_icon.png";
 
-const { sequenceName, movements } = defineProps(['sequenceName', 'movements'])
-const isCollapsed = ref(false)
+const { sequenceName, movements } = defineProps(["sequenceName", "movements"]);
+const isCollapsed = ref(false);
 
 function collapseSequence() {
-  isCollapsed.value = !isCollapsed.value
+  isCollapsed.value = !isCollapsed.value;
 }
 
 function deleteSequence() {
-  emit('delete-sequence', sequenceName)
+  emit("delete-sequence", sequenceName);
 }
 
 function playSequence() {
-  emit('play-sequence', sequenceName)
+  emit("play-sequence", sequenceName);
 }
 
-const collapsed = ref(false)
-
+const collapsed = ref(false);
 </script>
 
 <template>
-  <div class="sequence" :style="isCollapsed ? 'border-radius: 27px' : 'border-radius: 27px 27px 0 0'">
+  <div
+    class="sequence"
+    :style="
+      isCollapsed ? 'border-radius: 27px' : 'border-radius: 27px 27px 0 0'
+    "
+  >
     <div class="metadata">
       <button class="button" @click="playSequence">
-        <img :src=play_icon alt="arrow" />
+        <img :src="play_icon" alt="arrow" />
       </button>
       <button class="button" @click="deleteSequence">
-        <img :src=delete_icon alt="arrow" />
+        <img :src="delete_icon" alt="arrow" />
       </button>
       <h1>{{ sequenceName }}</h1>
       <button class="button half" @click="collapseSequence">
-        <img :src=chevron_icon alt="arrow"
-          :style="isCollapsed ? 'transform: rotate(0deg)' : 'transform: rotate(-90deg)'" />
+        <img
+          :src="chevron_icon"
+          alt="arrow"
+          :style="
+            isCollapsed
+              ? 'transform: rotate(0deg)'
+              : 'transform: rotate(-90deg)'
+          "
+        />
       </button>
     </div>
     <div class="movements-holder" v-if="!isCollapsed">
       <div class="movement" v-for="movement in movements">
-        <img :src=movement />
+        <img :src="movement" />
       </div>
     </div>
   </div>
@@ -64,7 +75,7 @@ const collapsed = ref(false)
   width: 45% !important;
 }
 
-.button>img {
+.button > img {
   width: 32px;
   height: 32px;
 }
@@ -138,13 +149,13 @@ h1 {
   margin-right: 10px;
 }
 
-.movement>img {
+.movement > img {
   width: 40px;
   height: 40px;
   margin-right: 10px;
 }
 
-.movement>img:last-child {
+.movement > img:last-child {
   margin-right: 0;
 }
 

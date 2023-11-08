@@ -37,7 +37,3 @@ PB_BIND(armwar_SpannedCommandSequence, armwar_SpannedCommandSequence, AUTO)
 
 
 PB_BIND(armwar_ArmCommand, armwar_ArmCommand, AUTO)
-
-
-
-
