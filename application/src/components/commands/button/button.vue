@@ -1,25 +1,31 @@
 <script setup>
-import { ref } from 'vue'
-import { defineProps, getCurrentInstance } from 'vue'
+import { ref } from "vue";
+import { defineProps, getCurrentInstance } from "vue";
 
-const { emit } = getCurrentInstance()
+const { emit } = getCurrentInstance();
 
-const { image, buttonName, other } = defineProps(['image', 'buttonName', 'other'])
+const { image, buttonName, other } = defineProps([
+  "image",
+  "buttonName",
+  "other",
+]);
 
 const handleClick = () => {
-  emit('button-clicked', buttonName, image);
-}
+  emit("button-clicked", buttonName, image);
+};
 </script>
 
 <template>
   <div class="single-button-holder">
-    <button class="button" :class="other ? 'other-button' : ''"
-      @click="handleClick">
+    <button
+      class="button"
+      :class="other ? 'other-button' : ''"
+      @click="handleClick"
+    >
       <img :src="image" alt="arrow" />
     </button>
   </div>
 </template>
-
 
 <style scoped>
 .single-button-holder {
