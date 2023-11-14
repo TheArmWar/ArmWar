@@ -37,7 +37,7 @@ const handleDeviceClicked = (deviceId) => {
       @click="deleteDevice"
       v-if="allDevices.length > 0"
     >
-      delete a device
+      Delete a device
     </button>
   </div>
 </template>

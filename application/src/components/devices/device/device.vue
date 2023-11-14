@@ -3,7 +3,6 @@ import { ref } from "vue";
 import { getCurrentInstance } from "vue";
 const { emit } = getCurrentInstance();
 import connect_icon from "@/assets/connect_icon.png";
-import delete_icon from "@/assets/delete_icon.png";
 defineProps(["name", "active", "id"]);
 </script>
 

@@ -16,10 +16,15 @@ const handleNewSequence = () => {
 
 const handleDeleteSequence = (sequenceName) => {
   emit("delete-sequence", sequenceName);
+  console.log(allSequences);
 };
 
 const handlePlaySequence = (sequenceName) => {
   emit("play-sequence", sequenceName);
+};
+
+const deleteSequence = () => {
+  emit("delete-sequence");
 };
 </script>
 
@@ -44,6 +49,13 @@ const handlePlaySequence = (sequenceName) => {
         {{ isRecording ? "save" : "new" }}
       </button>
     </div>
+    <button
+      class="button delete"
+      @click="deleteSequence"
+      v-if="allSequences.length > 0"
+    >
+      Delete a sequence
+    </button>
   </div>
 </template>
 
@@ -81,6 +93,12 @@ const handlePlaySequence = (sequenceName) => {
 
 .button:active {
   background-color: var(--terciary-hover);
+}
+
+.delete {
+  background-color: red;
+  margin-top: -5px;
+  width: 144px;
 }
 
 h1 {
