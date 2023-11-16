@@ -163,8 +163,8 @@ const handleNewSequence = () => {
 };
 
 const handleNewDevice = () => {
-  const deviceName = prompt("Please enter the device name", "BAPT");
-  const deviceIp = prompt("Please enter the device ip", "192.168.39.148");
+  const deviceName = prompt("Please enter the device name", "Device Name");
+  const deviceIp = prompt("Please enter the device ip", "192.168.0.0");
   if (deviceName == null || deviceName == "") {
     alert("Device name cannot be empty");
     return;
