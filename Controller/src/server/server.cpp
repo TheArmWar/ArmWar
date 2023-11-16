@@ -103,8 +103,8 @@ void handleStatus(HTTPRequest *req, HTTPResponse *res) {
  * @param res
  */
 void handleCommand(HTTPRequest *req, HTTPResponse *res) {
-  armwar_ArmCommand cmd = {0};
-  armwar_CommandResponse cmdResponse = {0};
+  armwar_ArmCommand cmd = armwar_ArmCommand_init_zero;
+  armwar_CommandResponse cmdResponse = armwar_CommandResponse_init_zero;
   uint8_t respBuffer[BUFFER_SIZE] = {0};
   uint8_t *buffer;
   size_t buf_size;
