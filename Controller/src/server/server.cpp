@@ -5,7 +5,7 @@
 #include <SSLCert.hpp>
 #include <string>
 
-#include "../api/api.hpp"
+#include "../api/command.hpp"
 #include "armwar.pb.h"
 #include "server.hpp"
 
@@ -14,7 +14,7 @@
 // Enhance code readability
 using namespace httpsserver;
 
-Adafruit_PWMServoDriver *pwm;
+Adafruit_PWMServoDriver *pwm2;
 
 /**
  * @brief Decode a command from a buffer
@@ -60,13 +60,13 @@ bool encode_string(pb_ostream_t *stream, const pb_field_t *field,
 /**
  * @brief Construct a new Arm War Server object
  *
- * @param pwm The pwm servo driver the server interacts with
+ * @param pwm2 The pwm servo driver the server interacts with
  * @param portHTTPS
  * @param maxConnections
  * @param bindAddress
  */
 void serverSetup(HTTPServer *server, Adafruit_PWMServoDriver *servo) {
-  pwm = servo;
+  pwm2 = servo;
 
   // Create the root nodes
   ResourceNode *nodeGetRoot = new ResourceNode("/status", "GET", &handleStatus);
@@ -157,7 +157,7 @@ void handleCommand(HTTPRequest *req, HTTPResponse *res) {
     // TODO: need api Spanned sequence handler
     break;
   case armwar_ArmCommand_stated_command_tag:
-    command(cmd.command.stated_command, *pwm);
+    command(cmd.command.stated_command, *pwm2);
     break;
   default:
     Serial.println("Unknown command type: ");
