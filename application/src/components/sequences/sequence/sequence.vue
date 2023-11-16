@@ -13,15 +13,9 @@ function collapseSequence() {
   isCollapsed.value = !isCollapsed.value;
 }
 
-function deleteSequence() {
-  emit("delete-sequence", sequenceName);
-}
-
 function playSequence() {
   emit("play-sequence", sequenceName);
 }
-
-const collapsed = ref(false);
 </script>
 
 <template>
@@ -34,9 +28,6 @@ const collapsed = ref(false);
     <div class="metadata">
       <button class="button" @click="playSequence">
         <img :src="play_icon" alt="arrow" />
-      </button>
-      <button class="button" @click="deleteSequence">
-        <img :src="delete_icon" alt="arrow" />
       </button>
       <h1>{{ sequenceName }}</h1>
       <button class="button half" @click="collapseSequence">
@@ -94,7 +85,7 @@ h1 {
 
 .metadata {
   display: grid;
-  grid-template-columns: 10% 10% 60% 20%;
+  grid-template-columns: 10% 70% 20%;
   margin: auto;
 }
 
