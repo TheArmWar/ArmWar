@@ -34,7 +34,6 @@ export const MessageType = {
   SpannedCommand: { id: 8, str: "SpannedCommand" },
   SpannedCommandSequence: { id: 9, str: "SpannedCommandSequence" },
   ArmCommand: { id: 10, str: "ArmCommand" },
-  Demo: { id: 11, str: "Demo" },
 };
 
 /**
@@ -125,11 +124,8 @@ export class Protocol {
       );
     }
 
-    /* Create the payload (not encoded) of the object */
-    const payload = message.create(object);
-
     /* Returns the encoded payload */
-    return message.encode(payload).finish();
+    return message.encode(object).finish();
   }
 
   /**

@@ -2,11 +2,6 @@ syntax = "proto3";
 
 package armwar;
 
-message Demo {
-    string name = 1;
-    int32 age = 2;
-}
-
 /**
  * A list of commands that can be sent to the arm.
  */
