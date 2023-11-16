@@ -27,7 +27,7 @@ int FREQ = 50;
 int sens = 1;
 
 // PWM ServoDriver
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+Adafruit_PWMServoDriver pwmServo = Adafruit_PWMServoDriver();
 
 /**
  * wifiConnect function
@@ -54,9 +54,9 @@ void wifiConnect(const char *ssid, const char *password) {
 }
 
 void controllerSetup() {
-  pwm.begin();
-  pwm.setOscillatorFrequency(27000000);
-  pwm.setPWMFreq(FREQ);
+  pwmServo.begin();
+  pwmServo.setOscillatorFrequency(27000000);
+  pwmServo.setPWMFreq(FREQ);
 }
 
 void setup() {
@@ -67,15 +67,17 @@ void setup() {
   wifiConnect(SSID, PASSWORD);
 
   // Server setup
-  serverSetup(&server, &pwm);
+  serverSetup(&server, &pwmServo);
 
   // Controller setup
   controllerSetup();
+
+  Serial.println("Setup done");
 }
 
 void loop() {
   // Echo server listening
   server.loop();
 
-  Serial.println("Loop");
+  // Serial.println("Loop");
 }
