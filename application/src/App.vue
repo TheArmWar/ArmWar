@@ -195,10 +195,25 @@ const handleDeviceClicked = (deviceId) => {
   }
 };
 
-const handleDeleteSequence = (sequenceName) => {
-  allSequences.value = allSequences.value.filter(
-    (sequence) => sequence.name != sequenceName,
+const handleDeleteSequence = () => {
+  const sequencename = prompt("Please enter the sequence name", "New Sequence");
+  if (sequencename == null || sequencename == "") {
+    alert("Sequence name cannot be empty");
+    return;
+  }
+
+  const found = allSequences.value.find(
+    (sequence) => sequence.name == sequencename,
   );
+  if (!found) {
+    alert("Sequence not found");
+  }
+  for (var i = 0; i < allSequences.value.length; i++) {
+    if (allSequences.value[i].name == sequencename) {
+      allSequences.value.splice(i, 1);
+      break;
+    }
+  }
 };
 
 const handlePlaySequence = async (sequenceName) => {
