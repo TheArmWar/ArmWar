@@ -72,12 +72,22 @@ function buildProtocolPayload(buttonName) {
     // FIXME add the other commands (set-zero and go-to-zero and stop) and messages
   }
 
-  /* Build the payload object */
-  return { command: command, duration: 2 };
+  /* Build the payload object. The message sent is always an ArmCommand which wraps a traditional command. */
+  const message = protocol.getMessage(MessageType.ArmCommand);
+
+  /* Build the payload of ArmCommand with a TimedCommand */
+  // TODO: Manage different commands (Sequence, span, ect)
+  var payload = message.create({
+    timed_command: {
+      command: command,
+      duration: 2,
+    },
+  });
+
+  return payload;
 }
 
 const handleClickParent = async (buttonName, image) => {
-  console.log("button-clicked-parent from the parent component", image);
   if (isRecording.value) {
     currentSequence.value.push(image);
   } else {
@@ -89,9 +99,10 @@ const handleClickParent = async (buttonName, image) => {
     // Build a payload matching the buttonName command
     const payload = buildProtocolPayload(buttonName);
 
+    console.log("Send payload: ");
     console.log(payload);
 
-    const encodedPayload = protocol.encode(CommandType.TimedCommand, payload);
+    const encodedPayload = protocol.encode(MessageType.ArmCommand, payload);
 
     // Sends the requests and wait for the response
     const response = await fetch(currentDevice.ip, {
@@ -107,6 +118,9 @@ const handleClickParent = async (buttonName, image) => {
       MessageType.CommandResponse,
       encodedText,
     );
+
+    console.log("Got payload: ");
+    console.log(responseObj);
   }
 };
 
