@@ -78,7 +78,7 @@ function buildProtocolPayload(buttonName) {
   /* Build the payload of ArmCommand with a TimedCommand */
   // TODO: Manage different commands (Sequence, span, ect)
   var payload = message.create({
-    timed_command: {
+    timedCommand: {
       command: command,
       duration: 2,
     },
@@ -99,13 +99,14 @@ const handleClickParent = async (buttonName, image) => {
     // Build a payload matching the buttonName command
     const payload = buildProtocolPayload(buttonName);
 
-    console.log("Send payload: ");
-    console.log(payload);
-
     const encodedPayload = protocol.encode(MessageType.ArmCommand, payload);
 
+    console.log("Sent payload: ");
+    console.log(payload);
+    console.log(encodedPayload);
+
     // Sends the requests and wait for the response
-    const response = await fetch(currentDevice.ip, {
+    const response = await fetch(`http://${currentDevice.value.ip}/command`, {
       method: "POST",
       body: encodedPayload,
     });
@@ -162,8 +163,8 @@ const handleNewSequence = () => {
 };
 
 const handleNewDevice = () => {
-  const deviceName = prompt("Please enter the device name", "New Device");
-  const deviceIp = prompt("Please enter the device ip", "192.168.1.0");
+  const deviceName = prompt("Please enter the device name", "BAPT");
+  const deviceIp = prompt("Please enter the device ip", "192.168.39.148");
   if (deviceName == null || deviceName == "") {
     alert("Device name cannot be empty");
     return;
