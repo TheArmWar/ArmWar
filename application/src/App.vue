@@ -7,6 +7,9 @@ import Devices from "./components/devices/devices.vue";
 import Commands from "./components/commands/commands.vue";
 import Sequences from "./components/sequences/sequences.vue";
 
+import { useToast } from "vue-toast-notification";
+import "vue-toast-notification/dist/theme-sugar.css";
+
 // Imports protocol
 import {
   Protocol,
@@ -23,6 +26,8 @@ const currentDevice = ref("");
 const isRecording = ref(false);
 const currentSequence = ref([]);
 const currentSequenceName = ref("");
+
+const toast = ref("");
 
 function buildProtocolPayload(buttonName) {
   /* Select the command */
@@ -91,37 +96,58 @@ const handleClickParent = async (buttonName, image) => {
   if (isRecording.value) {
     currentSequence.value.push(image);
   } else {
-    if (currentDevice.value == null || currentDevice.value == "") {
-      alert("No device selected.");
-      return;
+    try {
+      if (currentDevice.value == null || currentDevice.value == "") {
+        alert("No device selected.");
+        return;
+      }
+
+      // Build a payload matching the buttonName command
+      const payload = buildProtocolPayload(buttonName);
+
+      const encodedPayload = protocol.encode(MessageType.ArmCommand, payload);
+
+      console.log("Sent payload: ");
+      console.log(payload);
+      console.log(encodedPayload);
+
+      // Sends the requests and wait for the response
+      const response = await fetch(`http://${currentDevice.value.ip}/command`, {
+        method: "POST",
+        body: encodedPayload,
+      });
+
+      // Gets the response body
+      const encodedText = await response.text();
+
+      // Decode the response
+      const responseObj = protocol.decode(
+        MessageType.CommandResponse,
+        encodedText,
+      );
+
+      console.log("Got payload: ");
+      console.log(responseObj);
+
+      if (responseObj.success)
+        toast.value.open({
+          message: "Command success",
+          type: "success",
+          position: "bottom-left",
+        });
+      else
+        toast.value.open({
+          message: "Command failed",
+          type: "error",
+          position: "bottom-left",
+        });
+    } catch (error) {
+      toast.value.open({
+        message: error,
+        type: "error",
+        position: "bottom-left",
+      });
     }
-
-    // Build a payload matching the buttonName command
-    const payload = buildProtocolPayload(buttonName);
-
-    const encodedPayload = protocol.encode(MessageType.ArmCommand, payload);
-
-    console.log("Sent payload: ");
-    console.log(payload);
-    console.log(encodedPayload);
-
-    // Sends the requests and wait for the response
-    const response = await fetch(`http://${currentDevice.value.ip}/command`, {
-      method: "POST",
-      body: encodedPayload,
-    });
-
-    // Gets the response body
-    const encodedText = await response.text();
-
-    // Decode the response
-    const responseObj = protocol.decode(
-      MessageType.CommandResponse,
-      encodedText,
-    );
-
-    console.log("Got payload: ");
-    console.log(responseObj);
   }
 };
 
@@ -265,6 +291,13 @@ const handleDeleteDevice = () => {
 
 onMounted(async () => {
   protocol = await Protocol.load("armwar.proto");
+  toast.value = useToast();
+
+  // Force dismiss specific toast
+  // instance.dismiss();
+
+  // Dismiss all opened toast immediately
+  // $toast.clear();
 });
 </script>
 
