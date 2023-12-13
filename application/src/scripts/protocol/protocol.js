@@ -108,6 +108,82 @@ export class Protocol {
 
   /**
    * @method
+   * Build a javascript object with protobuff based on the askes
+   * command.
+   * @param {String} commandName name of the command
+   * @returns {Object} javascript object matching the command name
+   */
+  buildCommand(commandName) {
+    /* Select the command */
+    var command = null;
+
+    switch (commandName) {
+      case "release":
+        command = CommandType.Release;
+        break;
+
+      case "up":
+        command = CommandType.Up;
+        break;
+
+      case "press":
+        command = CommandType.Grab;
+        break;
+
+      case "rotate_ccw":
+        command = CommandType.RotateCcw;
+        break;
+
+      case "forward":
+        command = CommandType.Forward;
+        break;
+
+      case "rotate_cw":
+        command = CommandType.RotateCw;
+        break;
+
+      case "left":
+        command = CommandType.Left;
+        break;
+
+      case "backward":
+        command = CommandType.Backward;
+        break;
+
+      case "right":
+        command = CommandType.Right;
+        break;
+
+      case "down":
+        command = CommandType.Down;
+        break;
+
+      case "set-zero":
+        command = CommandType.Set;
+        break;
+
+      case "reset":
+        command = CommandType.Reset;
+        break;
+    }
+
+    /* Build the payload object. The message sent is always an ArmCommand which wraps a traditional command. */
+    const message = this.getMessage(MessageType.ArmCommand);
+
+    /* Build the payload of ArmCommand with a TimedCommand */
+    // TODO: Manage different commands (Sequence, span, ect)
+    var payload = message.create({
+      timedCommand: {
+        command: command,
+        duration: 2,
+      },
+    });
+
+    return payload;
+  }
+
+  /**
+   * @method
    * Encode a message
    * @param {@enum MessageType} messageType Type of message from protocol
    * @param {Object} object Object satisfying the messageType structure
