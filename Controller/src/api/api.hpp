@@ -1,5 +1,10 @@
+#ifndef API_HPP
+#define API_HPP
+
 #include <Adafruit_PWMServoDriver.h>
 #include "../server/armwar.pb.h"
+
+
 
 /**
  * Rotate every motor to the middle position
@@ -93,3 +98,5 @@ int release(Adafruit_PWMServoDriver pwm, int nb_degree);
  * @return 0 if success, 1 if error, -1 if command not found
  */
 int parse_command(armwar_Command command, int (*func) (Adafruit_PWMServoDriver, int));
+
+#endif /* API_HPP */

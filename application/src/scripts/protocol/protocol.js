@@ -34,7 +34,6 @@ export const MessageType = {
   SpannedCommand: { id: 8, str: "SpannedCommand" },
   SpannedCommandSequence: { id: 9, str: "SpannedCommandSequence" },
   ArmCommand: { id: 10, str: "ArmCommand" },
-  Demo: { id: 11, str: "Demo" },
 };
 
 /**
@@ -93,7 +92,7 @@ export class Protocol {
    * @param {@enum MessageType} messageType
    * @returns Protobuf message
    */
-  #getMessage(messageType) {
+  getMessage(messageType) {
     /* Check if the messageType exists */
     if (messageType >= Object.keys(messageType).length) {
       throw new Error(
@@ -115,7 +114,7 @@ export class Protocol {
    */
   encode(messageType, object) {
     /* Gets the matching message */
-    const message = this.#getMessage(messageType);
+    const message = this.getMessage(messageType);
 
     /* Checks object validity depending on the messageType */
     if (message.verify(object)) {
@@ -125,11 +124,8 @@ export class Protocol {
       );
     }
 
-    /* Create the payload (not encoded) of the object */
-    const payload = message.create(object);
-
     /* Returns the encoded payload */
-    return message.encode(payload).finish();
+    return message.encode(object).finish();
   }
 
   /**
@@ -142,7 +138,7 @@ export class Protocol {
    */
   decode(messageType, payload) {
     /* Gets the matching message */
-    const message = this.#getMessage(messageType);
+    const message = this.getMessage(messageType);
 
     /* Encode the payload as Uint8 to be decoded by protobuf */
     const uint8Message = this.uint8Encoder.encode(payload);

@@ -72,12 +72,22 @@ function buildProtocolPayload(buttonName) {
     // FIXME add the other commands (set-zero and go-to-zero and stop) and messages
   }
 
-  /* Build the payload object */
-  return { command: command, duration: 2 };
+  /* Build the payload object. The message sent is always an ArmCommand which wraps a traditional command. */
+  const message = protocol.getMessage(MessageType.ArmCommand);
+
+  /* Build the payload of ArmCommand with a TimedCommand */
+  // TODO: Manage different commands (Sequence, span, ect)
+  var payload = message.create({
+    timedCommand: {
+      command: command,
+      duration: 2,
+    },
+  });
+
+  return payload;
 }
 
 const handleClickParent = async (buttonName, image) => {
-  console.log("button-clicked-parent from the parent component", image);
   if (isRecording.value) {
     currentSequence.value.push(image);
   } else {
@@ -89,12 +99,14 @@ const handleClickParent = async (buttonName, image) => {
     // Build a payload matching the buttonName command
     const payload = buildProtocolPayload(buttonName);
 
-    console.log(payload);
+    const encodedPayload = protocol.encode(MessageType.ArmCommand, payload);
 
-    const encodedPayload = protocol.encode(CommandType.TimedCommand, payload);
+    console.log("Sent payload: ");
+    console.log(payload);
+    console.log(encodedPayload);
 
     // Sends the requests and wait for the response
-    const response = await fetch(currentDevice.ip, {
+    const response = await fetch(`http://${currentDevice.value.ip}/command`, {
       method: "POST",
       body: encodedPayload,
     });
@@ -107,6 +119,9 @@ const handleClickParent = async (buttonName, image) => {
       MessageType.CommandResponse,
       encodedText,
     );
+
+    console.log("Got payload: ");
+    console.log(responseObj);
   }
 };
 
@@ -148,8 +163,8 @@ const handleNewSequence = () => {
 };
 
 const handleNewDevice = () => {
-  const deviceName = prompt("Please enter the device name", "New Device");
-  const deviceIp = prompt("Please enter the device ip", "192.168.1.0");
+  const deviceName = prompt("Please enter the device name", "Device Name");
+  const deviceIp = prompt("Please enter the device ip", "192.168.0.0");
   if (deviceName == null || deviceName == "") {
     alert("Device name cannot be empty");
     return;
@@ -195,10 +210,25 @@ const handleDeviceClicked = (deviceId) => {
   }
 };
 
-const handleDeleteSequence = (sequenceName) => {
-  allSequences.value = allSequences.value.filter(
-    (sequence) => sequence.name != sequenceName,
+const handleDeleteSequence = () => {
+  const sequencename = prompt("Please enter the sequence name", "New Sequence");
+  if (sequencename == null || sequencename == "") {
+    alert("Sequence name cannot be empty");
+    return;
+  }
+
+  const found = allSequences.value.find(
+    (sequence) => sequence.name == sequencename,
   );
+  if (!found) {
+    alert("Sequence not found");
+  }
+  for (var i = 0; i < allSequences.value.length; i++) {
+    if (allSequences.value[i].name == sequencename) {
+      allSequences.value.splice(i, 1);
+      break;
+    }
+  }
 };
 
 const handlePlaySequence = async (sequenceName) => {
