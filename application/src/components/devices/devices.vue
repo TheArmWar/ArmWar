@@ -27,7 +27,7 @@ const handleDeviceClicked = (deviceId) => {
     <Device
       v-for="device in allDevices"
       :name="device.name"
-      :active="device.active"
+      :connected="device.connected"
       :id="device.id"
       @device-clicked="handleDeviceClicked"
     />

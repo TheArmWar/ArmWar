@@ -217,13 +217,9 @@ const handleNewDevice = () => {
   let newDevice = {
     name: deviceName,
     ip: deviceIp,
-    active: allDevices.value.length == 0,
+    connected: false,
     id: Date.now(),
   };
-
-  if (allDevices.value.length == 0) {
-    currentDevice.value = newDevice;
-  }
 
   allDevices.value.push(newDevice);
 
@@ -231,11 +227,27 @@ const handleNewDevice = () => {
 };
 
 const handleDeviceClicked = (deviceId) => {
-  for (var i = 0; i < allDevices.value.length; i++) {
-    if (allDevices.value[i].id == deviceId) {
-      currentDevice.value = allDevices.value[i];
-      break;
-    }
+  let device = allDevices.value.find((device) => device.id == deviceId);
+
+  // Disconnect if the clicked device is connected
+  if (device.connected) {
+    device.connected = false;
+    currentDevice.value = "";
+  }
+
+  // Device is not already connected so disconnect the previous connceted device
+  // and connect the clicked device
+  else {
+    let alreadyConnectedDevice = allDevices.value.find(
+      (device) => device.connected,
+    );
+
+    device.connected = true;
+
+    if (alreadyConnectedDevice != null)
+      alreadyConnectedDevice.connected = false;
+
+    currentDevice.value = device;
   }
 };
 
