@@ -289,7 +289,12 @@ const handleDeleteDevice = () => {
   const found = allDevices.value.find((device) => device.name == devicename);
   if (!found) {
     alert("Device not found");
+    return;
+  } else if (found.connected) {
+    alert("Can't delete a connected deivce.");
+    return;
   }
+
   for (var i = 0; i < allDevices.value.length; i++) {
     if (allDevices.value[i].name == devicename) {
       allDevices.value.splice(i, 1);
