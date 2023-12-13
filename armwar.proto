@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package armwar;
+
+/**
+ * A list of commands that can be sent to the arm.
+ */
+enum Command {
+  UP = 0;
+  DOWN = 1;
+  LEFT = 2;
+  RIGHT = 3;
+  FORWARD = 4;
+  BACKWARD = 5;
+  ROTATE_CW = 6;
+  ROTATE_CCW = 7;
+  GRAB = 8;
+  RELEASE = 9;
+  SET = 10;
+  RESET = 11;
+}
+
+/** A message containing the response to a command. */
+message CommandResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+/**
+ * A message containing the current state of the arm.
+ * Used for debugging and visualization.
+ */
+message ArmState {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+  float roll = 4;
+  bool is_grabbing = 5;
+}
+
+/**
+ * A message to check the availability of the arm.
+ */
+message ArmAvailability {
+  bool available = 1;
+  optional ArmState state = 2;
+}
+
+/**
+ * A message to connect to the arm.
+ * To prevent multiple clients from connecting to the arm at the same time,
+ * the arm will then only accept commands from the current client.
+ */
+message Connect {
+  bool connect = 1;
+  optional int32 timeout = 2;
+}
+
+/**
+ * An explicit disconnect message.
+ * This is not necessary, as the arm will automatically disconnect after a
+ * certain amount of time without receiving commands. However, it is useful
+ * to quickly free up the arm for other clients.
+ */
+message Disconnect { bool disconnect = 1; }
+
+/**
+ * A message containing a single action and its duration.
+ */
+message TimedCommand {
+  Command command = 1;
+  int32 duration = 2;
+}
+
+/**
+ * A message containing a sequence of actions and their durations.
+ */
+message TimedCommandSequence { repeated TimedCommand command = 1; }
+
+/*
+ * A message containing a single action and whether to start or stop it.
+ */
+message StatedCommand {
+  Command command = 1;
+  bool start = 2;
+}
+
+/**
+ * A message containing a single action and its span.
+ */
+message SpannedCommand {
+  Command command = 1;
+  float span = 2;
+}
+
+/**
+ * A message containing a sequence of actions and their spans.
+ */
+message SpannedCommandSequence { repeated SpannedCommand command = 1; }
+
+message ArmCommand {
+  oneof command {
+    TimedCommand timed_command = 1;
+    TimedCommandSequence timed_sequence = 2;
+    SpannedCommand spanned_command = 3;
+    SpannedCommandSequence spanned_sequence = 4;
+    StatedCommand stated_command = 5;
+  }
+}

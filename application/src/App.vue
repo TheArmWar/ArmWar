@@ -7,8 +7,7 @@ import Devices from "./components/devices/devices.vue";
 import Commands from "./components/commands/commands.vue";
 import Sequences from "./components/sequences/sequences.vue";
 
-import { useToast } from "vue-toast-notification";
-import "vue-toast-notification/dist/theme-sugar.css";
+import { Toaster, ToastType } from "./scripts/toaster/toaster.js";
 
 // Imports protocol
 import {
@@ -76,7 +75,13 @@ function buildProtocolPayload(buttonName) {
       command = CommandType.Down;
       break;
 
-    // FIXME add the other commands (set-zero and go-to-zero and stop) and messages
+    case "set-zero":
+      command = CommandType.Set;
+      break;
+
+    case "reset":
+      command = CommandType.Reset;
+      break;
   }
 
   /* Build the payload object. The message sent is always an ArmCommand which wraps a traditional command. */
@@ -100,7 +105,7 @@ const handleClickParent = async (buttonName, image) => {
   } else {
     try {
       if (currentDevice.value == null || currentDevice.value == "") {
-        alert("No device selected.");
+        toast.value.display(ToastType.Error, "No device selected");
         return;
       }
 
@@ -133,23 +138,10 @@ const handleClickParent = async (buttonName, image) => {
       console.log(responseObj);
 
       if (responseObj.success)
-        toast.value.open({
-          message: "Command success",
-          type: "success",
-          position: "bottom-left",
-        });
-      else
-        toast.value.open({
-          message: "Command failed",
-          type: "error",
-          position: "bottom-left",
-        });
+        toast.value.display(ToastType.Success, "Command success");
+      else toast.value.display(ToastType.Error, "Command failed");
     } catch (error) {
-      toast.value.open({
-        message: error,
-        type: "error",
-        position: "bottom-left",
-      });
+      toast.value.display(ToastType.Error, error.message);
     }
   }
 };
@@ -165,7 +157,7 @@ const handleNewSequence = () => {
     );
     if (currentSequenceName.value == null || currentSequenceName.value == "") {
       isRecording.value = false;
-      alert("Sequence name cannot be empty");
+      toast.value.display(ToastType.Error, "Sequence name cannot be empty");
       return;
     }
     if (
@@ -174,13 +166,12 @@ const handleNewSequence = () => {
       )
     ) {
       isRecording.value = false;
-      alert("Sequence name already exists");
-
+      toast.value.display(ToastType.Error, "Sequence name already exists");
       return;
     }
   } else {
     if (currentSequence.value.length == 0) {
-      alert("Sequence cannot be empty");
+      toast.value.display(ToastType.Error, "Sequence cannot be empty");
       return;
     }
     console.log("final sequence", currentSequence.value);
@@ -195,22 +186,22 @@ const handleNewDevice = () => {
   const deviceName = prompt("Please enter the device name", "Device Name");
   const deviceIp = prompt("Please enter the device ip", "192.168.0.0");
   if (deviceName == null || deviceName == "") {
-    alert("Device name cannot be empty");
+    toast.value.display(ToastType.Error, "Device name cannot be empty");
     return;
   }
 
   if (deviceIp == null || deviceIp == "") {
-    alert("Device ip cannot be empty");
+    toast.value.display(ToastType.Error, "Device ip cannot be empty");
     return;
   }
 
   if (allDevices.value.find((device) => device.name == deviceName)) {
-    alert("Device name already exists");
+    toast.value.display(ToastType.Error, "Device name already exists");
     return;
   }
 
   if (allDevices.value.find((device) => device.ip == deviceIp)) {
-    alert("Device ip already exists");
+    toast.value.display(ToastType.Error, "Device ip already exists");
     return;
   }
 
@@ -254,7 +245,7 @@ const handleDeviceClicked = (deviceId) => {
 const handleDeleteSequence = () => {
   const sequencename = prompt("Please enter the sequence name", "New Sequence");
   if (sequencename == null || sequencename == "") {
-    alert("Sequence name cannot be empty");
+    toast.value.display(ToastType.Error, "Sequence name cannot be empty");
     return;
   }
 
@@ -262,7 +253,7 @@ const handleDeleteSequence = () => {
     (sequence) => sequence.name == sequencename,
   );
   if (!found) {
-    alert("Sequence not found");
+    toast.value.display(ToastType.Error, "Sequence not found");
   }
   for (var i = 0; i < allSequences.value.length; i++) {
     if (allSequences.value[i].name == sequencename) {
@@ -282,16 +273,16 @@ const handlePlaySequence = async (sequenceName) => {
 const handleDeleteDevice = () => {
   const devicename = prompt("Please enter the device name", "New Device");
   if (devicename == null || devicename == "") {
-    alert("Device name cannot be empty");
+    toast.value.display(ToastType.Error, "Device name cannot be empty");
     return;
   }
 
   const found = allDevices.value.find((device) => device.name == devicename);
   if (!found) {
-    alert("Device not found");
+    toast.value.display(ToastType.Error, "Device not found");
     return;
   } else if (found.connected) {
-    alert("Can't delete a connected deivce.");
+    toast.value.display(ToastType.Error, "Can't delete a connected device");
     return;
   }
 
@@ -311,7 +302,7 @@ const handleDeleteDevice = () => {
 
 onMounted(async () => {
   protocol = await Protocol.load("armwar.proto");
-  toast.value = useToast();
+  toast.value = new Toaster();
 
   // Force dismiss specific toast
   // instance.dismiss();

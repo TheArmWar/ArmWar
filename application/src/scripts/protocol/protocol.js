@@ -16,6 +16,8 @@ export const CommandType = {
   RotateCcw: 7,
   Grab: 8,
   Release: 9,
+  Set: 10,
+  Reset: 11,
 };
 
 /**
