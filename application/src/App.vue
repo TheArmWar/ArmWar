@@ -17,6 +17,8 @@ import {
   CommandType,
 } from "./scripts/protocol/protocol.js";
 
+const timeout_ms = 3000;
+
 var protocol = null;
 
 const allSequences = ref([]);
@@ -115,6 +117,7 @@ const handleClickParent = async (buttonName, image) => {
       const response = await fetch(`http://${currentDevice.value.ip}/command`, {
         method: "POST",
         body: encodedPayload,
+        signal: AbortSignal.timeout(timeout_ms),
       });
 
       // Gets the response body
