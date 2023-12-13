@@ -103,17 +103,19 @@ void handleStatus(HTTPRequest *req, HTTPResponse *res) {
  * @param res
  */
 void handleCommand(HTTPRequest *req, HTTPResponse *res) {
-  armwar_ArmCommand cmd = {0};
-  armwar_CommandResponse cmdResponse = {0};
+  armwar_ArmCommand cmd = armwar_ArmCommand_init_zero;
+  armwar_CommandResponse cmdResponse = armwar_CommandResponse_init_zero;
   uint8_t respBuffer[BUFFER_SIZE] = {0};
   uint8_t *buffer;
   size_t buf_size;
+  size_t buf_len;
   bool success;
   std::string errorMessage{""};
 
   res->setHeader("Access-Control-Allow-Origin", "*");
   buffer = (uint8_t *)malloc(BUFFER_SIZE);
   buf_size = BUFFER_SIZE;
+  buf_len = 0;
   success = true;
 
   // Read the body of the request, 512 bytes at a time.
@@ -121,6 +123,7 @@ void handleCommand(HTTPRequest *req, HTTPResponse *res) {
   // sequences and nanopb decoding need the full buffer.
   while (!req->requestComplete()) {
     size_t size = req->readBytes(buffer, BUFFER_SIZE);
+    buf_len += size;
     if (size >= BUFFER_SIZE) {
       uint8_t *new_buffer = (uint8_t *)realloc(buffer, buf_size + BUFFER_SIZE);
 
@@ -136,7 +139,7 @@ void handleCommand(HTTPRequest *req, HTTPResponse *res) {
   }
 
   // decode armwar_ArmCommand
-  if (!decode_command(&cmd, buffer, buf_size)) {
+  if (!decode_command(&cmd, buffer, buf_len)) {
     success = false;
     errorMessage = "Failed to decode the command.";
     goto sendResponse;
@@ -146,17 +149,22 @@ void handleCommand(HTTPRequest *req, HTTPResponse *res) {
   switch (cmd.which_command) {
   case armwar_ArmCommand_timed_command_tag:
     // TODO: need api Timed command handler
+    Serial.println("Received Timed command");
     break;
   case armwar_ArmCommand_timed_sequence_tag:
     // TODO: need api Timed sequence handler
+    Serial.println("Received Timed sequence");
     break;
   case armwar_ArmCommand_spanned_command_tag:
     // TODO: need api Spanned command handler
+    Serial.println("Received Spanned command");
     break;
   case armwar_ArmCommand_spanned_sequence_tag:
     // TODO: need api Spanned sequence handler
+    Serial.println("Received Spanned sequence");
     break;
   case armwar_ArmCommand_stated_command_tag:
+    Serial.println("Received Stated command");
     command(cmd.command.stated_command, *pwm);
     break;
   default:
