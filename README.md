@@ -10,8 +10,8 @@ This project is a simple web application that allows to demonstrate how the appl
 
 ### Dependencies
 
-- [ ] node
-- [ ] npm
+- node
+- npm
 
 ### Recommended IDE Setup
 
@@ -43,10 +43,10 @@ This project aims to build an ESP32 DO IT DEVKIT program that receives instructi
 
 To be able to compile and flash the controller, you will need to install and setup up several dependencies.
 
-- [ ] Arduino IDE
-- [ ] Adafruit PWM Servo Driver Library [v3.0.1]
-- [ ] ESP32_HTTPS_Server
-- [ ] Nanopb
+- Arduino IDE
+- Adafruit PWM Servo Driver Library [v3.0.1]
+- ESP32_HTTPS_Server
+- Nanopb
 
 #### Arduino IDE
 
@@ -67,13 +67,13 @@ Now, the library should compile without errors.
 
 You have to install Nanopb from https://jpa.kapsi.fi/nanopb/download/. Select the latest linux version. Then, untar the downloaded directory where ever you want. Once this is done, create a new directory called **Nanopb** inside the libraries directory of Arduino IDE. Then, the following files should appear on the untar directory:
 
-- [ ] pb.h
-- [ ] pb_common.h
-- [ ] pb_common.c
-- [ ] pb_encode.h
-- [ ] pb_encode.c
-- [ ] pb_decode.h
-- [ ] pb_decode.c
+- pb.h
+- pb_common.h
+- pb_common.c
+- pb_encode.h
+- pb_encode.c
+- pb_decode.h
+- pb_decode.c
 
 Copy all these files in the directory you've just created.
 Then, you should add the generator-bin directory of the untar directory to your **PATH**.
@@ -81,3 +81,33 @@ Then, you should add the generator-bin directory of the untar directory to your 
 ### Wifi Setup
 
 Don't forget to replace the network information in the source code with yours.
+
+### Documentation
+
+#### Code
+
+TLDR: **Only document what is necessary**, the code should be self-explanatory.
+
+We're using [Robert C. Martin's Clean Code](https://github.com/martinmurciego/good-books/blob/master/Clean%20Code_%20A%20Handbook%20of%20Agile%20Software%20Craftsmanship%20-%20Robert%20C.%20Martin.pdf) as a reference for our code.
+Code should be self-explanatory and comments should be used **only when necessary**.\
+This is why for the moment we're documentating **only the function, classes, enums...** with the [Doxygen](https://www.doxygen.nl/index.html) syntax for the cpp/hpp files.\
+For the frontend files we're using the [JSDoc](https://jsdoc.app/) syntax only when necessary.
+
+#### Project
+
+The readme acts as the main documentation for the project, and as such should be as complete as possible.
+A detail documentation/explanation of the frontend will be added in the future.
+
+### Versioning
+
+We're using [Semantic Versioning](https://semver.org/) for our versioning.
+We'll be using the following format for our versioning: `MAJOR.MINOR.PATCH`.
+
+- `MAJOR` version when you make incompatible API changes
+- `MINOR` version when you add functionality in a backwards compatible manner
+- `PATCH` version when you make backwards compatible bug fixes
+
+### Release
+
+The realease will be done using [Github Releases](https://docs.github.com/en/github/administering-a-repository/managing-releases-in-a-repository).
+For the extension we will be using the tar.gz format.
