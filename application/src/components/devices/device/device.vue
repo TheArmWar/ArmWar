@@ -3,7 +3,8 @@ import { ref } from "vue";
 import { getCurrentInstance } from "vue";
 const { emit } = getCurrentInstance();
 import connect_icon from "@/assets/connect_icon.png";
-defineProps(["name", "active", "id"]);
+import disconnect_icon from "@/assets/disconnect_icon.png";
+defineProps(["name", "connected", "id"]);
 </script>
 
 <style scoped>
@@ -39,7 +40,7 @@ h1 {
   justify-content: left;
 }
 
-.active {
+.connected {
   color: var(--green);
 }
 
@@ -54,8 +55,13 @@ img {
 <template>
   <div class="main">
     <a @click="$emit('device-clicked', id)">
-      <img :src="connect_icon" alt="connect icon" />
-      <h1 :class="{ active: active }">{{ name }}</h1>
+      <img v-if="connected" :src="connect_icon" alt="connect icon" />
+      <img
+        v-else-if="!connected"
+        :src="disconnect_icon"
+        alt="disconnect icon"
+      />
+      <h1 :class="{ connected: connected }">{{ name }}</h1>
     </a>
   </div>
 </template>

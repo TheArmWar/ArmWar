@@ -89,7 +89,7 @@ const handleButtonClick = (buttonName, image) => {
       <Button
         :image="reset_icon"
         @button-clicked="handleButtonClick"
-        buttonName="go-to_zero"
+        buttonName="reset"
       />
 
       <div class="button-holder other-holder">
