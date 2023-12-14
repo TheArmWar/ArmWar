@@ -8,13 +8,13 @@ Thread stated_thread;
  * @param pwm: the pwm object
  * @param nb_degree: the number of degrees to rotate
 */
-int exec_command(int (*func) (Adafruit_PWMServoDriver, int), Adafruit_PWMServoDriver pwm, int nb_degree)
+int exec_command(func fun, Adafruit_PWMServoDriver pwm, int nb_degree)
 {
     while (1) {
         if (stated_thread.stop) {
             return 0;
         }
-        if (func(pwm, nb_degree) == 1)
+        if (fun(pwm, nb_degree) == 1)
         {
             printf("Error while executing command\n");
             return 1;
@@ -24,8 +24,8 @@ int exec_command(int (*func) (Adafruit_PWMServoDriver, int), Adafruit_PWMServoDr
 
 int command(armwar_StatedCommand command, Adafruit_PWMServoDriver pwm)
 {
-    int (*func) (Adafruit_PWMServoDriver, int);
-    if (parse_command(command.command, func) == -1)
+    func fun;
+    if (parse_command(command.command) == NULL)
     {
         printf("Command not found\n");
         return -1;
@@ -33,7 +33,7 @@ int command(armwar_StatedCommand command, Adafruit_PWMServoDriver pwm)
 
     if (command.start) {
         stated_thread.SetName("test");
-        stated_thread.SetThread(std::thread(exec_command, func, pwm, 1));
+        stated_thread.SetThread(std::thread(exec_command, fun, pwm, 1));
     }
     else {
         stated_thread.stop = true;
@@ -43,14 +43,14 @@ int command(armwar_StatedCommand command, Adafruit_PWMServoDriver pwm)
 
 int command(armwar_SpannedCommand command, Adafruit_PWMServoDriver pwm)
 {
-    int (*func) (Adafruit_PWMServoDriver, int);
-    if (parse_command(command.command, func) == -1)
+    func fun;
+    if (parse_command(command.command) == NULL)
     {
         printf("Command not found\n");
         return -1;
     }
 
-    if (func(pwm, command.span) == 1)
+    if (fun(pwm, command.span) == 1)
     {
         printf("Error while executing command\n");
         return 1;
@@ -59,8 +59,10 @@ int command(armwar_SpannedCommand command, Adafruit_PWMServoDriver pwm)
 
 int command(armwar_TimedCommand command, Adafruit_PWMServoDriver pwm)
 {
-    int (*func) (Adafruit_PWMServoDriver, int);
-    if (parse_command(command.command, func) == -1)
+    Serial.println("Timed command");
+    func fun;
+    fun = parse_command(command.command);
+    if (parse_command(command.command) == NULL)
     {
         printf("Command not found\n");
         return -1;
@@ -69,10 +71,11 @@ int command(armwar_TimedCommand command, Adafruit_PWMServoDriver pwm)
     std::time_t start_time = std::time(nullptr);
     while (std::time(nullptr) - start_time < command.duration)
     {
-        if (func(pwm, nb_degree) == 1)
+        if (fun(pwm, nb_degree) == 1)
         {
             printf("Error while executing command\n");
             return 1;
         }
     }
+    return 0;
 }
