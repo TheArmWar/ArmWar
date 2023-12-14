@@ -8,7 +8,7 @@
 #define FREQ 50 // 50 Hz
 
 #define TURN_90  170
-#define UNIT 2 // 2 unit ~= 1 degree
+#define UNIT 20 // 2 unit ~= 1 degree
 
 // Base position of all motors
 int curr_pos[] = {305, 305, 305, 305, 305};
@@ -27,12 +27,20 @@ int basePos(Adafruit_PWMServoDriver pwm)
 
 int left(Adafruit_PWMServoDriver pwm, int nb_degree)
 {
-  int left_pos = curr_pos[0] - (nb_degree * UNIT);
-  if (left_pos < SERVOMIN)
+  int left_pos = curr_pos[0];
+  int res = 0;
+  for (int i = 0; i < nb_degree; i++)
   {
-    left_pos = SERVOMIN;
+    left_pos -= UNIT;
+    if (left_pos < SERVOMIN)
+    {
+      left_pos = SERVOMIN;
+    }
+    res &= pwm.setPWM(motors[0], 0, left_pos);
+    delay(10);
   }
-  return pwm.setPWM(motors[0], 0, left_pos);
+  curr_pos[0] = left_pos;
+  return res;
 }
 
 int right(Adafruit_PWMServoDriver pwm, int nb_degree)
@@ -117,41 +125,31 @@ int release(Adafruit_PWMServoDriver pwm, int nb_degree)
   return pwm.setPWM(curr_pos[4], 0, release_pos);
 }
 
-int parse_command(armwar_Command command, int (*func) (Adafruit_PWMServoDriver, int))
+func parse_command(armwar_Command command)
 {
   switch (command)
   {
   case armwar_Command_UP:
-    func = &up;
-    return 1;
+    return &up;
   case armwar_Command_DOWN:
-    func = &down;
-    return 1;
+    return &down;
   case armwar_Command_LEFT:
-    func = &left;
-    return 1;
+    return &left;
   case armwar_Command_RIGHT:
-    func = &right;
-    return 1;
+    return &right;
   case armwar_Command_FORWARD:
-    func = &forward;
-    return 1;
+    return &forward;
   case armwar_Command_BACKWARD:
-    func = &backward;
-    return 1;
+    return &backward;
   case armwar_Command_ROTATE_CW:
-    func = &rotate_cw;
-    return 1;
+    return &rotate_cw;
   case armwar_Command_ROTATE_CCW:
-    func = &rotate_ccw;
-    return 1;
+    return &rotate_ccw;
   case armwar_Command_GRAB:
-    func = &grab;
-    return 1;
+    return &grab;
   case armwar_Command_RELEASE:
-    func = &release;
-    return 1;
+    return &release;
   default:
-    return -1;
+    return NULL;
   }
 }

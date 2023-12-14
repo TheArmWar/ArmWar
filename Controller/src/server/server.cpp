@@ -149,6 +149,7 @@ void handleCommand(HTTPRequest *req, HTTPResponse *res) {
   switch (cmd.which_command) {
   case armwar_ArmCommand_timed_command_tag:
     // TODO: need api Timed command handler
+    command(cmd.command.timed_command, *pwm2);
     Serial.println("Received Timed command");
     break;
   case armwar_ArmCommand_timed_sequence_tag:

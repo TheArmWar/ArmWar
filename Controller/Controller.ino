@@ -26,6 +26,7 @@ HTTPServer server = HTTPServer(80);
 
 int FREQ = 50;
 int sens = 1;
+int start = 1;
 
 // PWM ServoDriver
 Adafruit_PWMServoDriver pwmServo = Adafruit_PWMServoDriver();
@@ -78,5 +79,13 @@ void setup() {
 
 void loop() {
   // Echo server listening
+  if (start == 1) {
+    int motors[] = {0, 3, 7, 11, 15};
+    int SERVOMID = 305;
+    for (int i = 0; i < 3; i++) {
+      pwmServo.setPWM(motors[i], 0, SERVOMID);
+    }
+    start = 0;
+  }
   server.loop();
 }
