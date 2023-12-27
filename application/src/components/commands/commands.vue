@@ -118,8 +118,9 @@ const handleButtonClick = (buttonName, image) => {
 }
 
 h1 {
-  color: var(--white-text);
+  color: var(--black-text);
   font-weight: 600;
+  font-size: var(--medium);
 }
 
 .other-holder {
@@ -128,7 +129,7 @@ h1 {
 }
 
 h1 {
-  color: var(--white-text);
+  color: var(--black-text);
   font-weight: 400;
   margin-bottom: 40px;
   text-align: center;

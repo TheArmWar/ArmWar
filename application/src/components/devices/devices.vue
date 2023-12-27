@@ -6,11 +6,8 @@ import Device from "./device/device.vue";
 
 const { allDevices } = defineProps(["allDevices"]);
 
-const handleNewDevice = () => {
-  emit("new-device");
-};
-const deleteDevice = () => {
-  emit("delete-device");
+const handleDeleteDevice = (deviceId) => {
+  emit("delete-device", deviceId);
 };
 
 const handleDeviceClicked = (deviceId) => {
@@ -30,23 +27,18 @@ const handleDeviceClicked = (deviceId) => {
       :connected="device.connected"
       :id="device.id"
       @device-clicked="handleDeviceClicked"
+      @delete-device="handleDeleteDevice"
     />
-    <button class="button" @click="handleNewDevice">new</button>
-    <button
-      class="button delete"
-      @click="deleteDevice"
-      v-if="allDevices.length > 0"
-    >
-      Delete a device
-    </button>
+    <button class="button" @click="$emit('new-device')">new</button>
   </div>
 </template>
 
 <style scoped>
 h1 {
-  color: var(--white-text);
+  color: var(--black-text);
   font-weight: 400;
   text-align: center;
+  font-size: var(--medium);
 }
 
 .devices {
@@ -62,7 +54,7 @@ h1 {
   height: 32px;
   border-radius: 20px;
   display: flex;
-  background-color: var(--secondary);
+  background-color: var(--grey);
   justify-content: center;
   align-items: center;
   cursor: pointer;
@@ -70,28 +62,29 @@ h1 {
   outline: none;
   border: none;
   margin-bottom: 25px;
-  color: var(--white-text);
+  color: var(--black-text);
+  font-size: var(--small);
 }
 
 .button:hover {
-  background-color: var(--terciary);
+  background-color: var(--grey);
 }
 
 .button:active {
-  background-color: var(--terciary-hover);
+  background-color: var(--grey);
 }
 
 .delete {
-  background-color: red;
+  background-color: var(--red);
   margin-top: -5px;
   width: 144px;
 }
 
 .delete:hover {
-  background-color: #ff0000a6;
+  background-color: var(--red);
 }
 
 .delete:active {
-  background-color: #ff000077;
+  background-color: var(--red);
 }
 </style>

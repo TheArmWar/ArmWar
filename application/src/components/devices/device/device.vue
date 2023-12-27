@@ -2,66 +2,67 @@
 import { ref } from "vue";
 import { getCurrentInstance } from "vue";
 const { emit } = getCurrentInstance();
-import connect_icon from "@/assets/connect_icon.png";
-import disconnect_icon from "@/assets/disconnect_icon.png";
+import robot_arm_icon from "@/assets/robot_arm_icon.png";
+import erase_icon from "@/assets/erase_icon.png";
+
 defineProps(["name", "connected", "id"]);
 </script>
 
 <style scoped>
-.main {
-  width: 100%;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  display: flex;
-}
-
-a {
-  margin: auto;
+.container {
   width: 70%;
-  display: flex;
-  justify-content: left;
-  align-items: center;
-  text-decoration: none;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 20px;
   cursor: pointer;
-  transition: background-color 0.3s;
-  outline: none;
-  border: none;
-}
-
-h1 {
-  margin: auto;
-  margin-left: 0;
-  font-weight: 400;
-  color: var(--white-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  align-items: center;
-  justify-content: left;
+  display: grid;
+  grid-template-columns: 80% 20%;
 }
 
 .connected {
   color: var(--green);
 }
 
-img {
+.arm_icon {
+  margin-right: 20px;
   width: 32px;
   height: 32px;
-  margin-right: 10px;
-  filter: invert(1);
+}
+
+.erase_icon {
+  width: 24px;
+  height: 24px;
+}
+
+a {
+  display: flex;
+}
+
+h1 {
+  font-weight: 400;
+  color: var(--black-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--small);
+}
+
+button {
+  margin: auto;
+  outline: none;
+  background-color: transparent;
+  border: none;
 }
 </style>
 
 <template>
-  <div class="main">
+  <div class="container">
     <a @click="$emit('device-clicked', id)">
-      <img v-if="connected" :src="connect_icon" alt="connect icon" />
-      <img
-        v-else-if="!connected"
-        :src="disconnect_icon"
-        alt="disconnect icon"
-      />
+      <img class="arm_icon" :src="robot_arm_icon" alt="robot arm icon" />
       <h1 :class="{ connected: connected }">{{ name }}</h1>
     </a>
+    <button @click="$emit('delete-device', id)">
+      <img class="erase_icon" :src="erase_icon" alt="erase icon" />
+    </button>
   </div>
 </template>

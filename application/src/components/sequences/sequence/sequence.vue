@@ -3,10 +3,13 @@ import { ref } from "vue";
 import { defineProps, getCurrentInstance } from "vue";
 const { emit } = getCurrentInstance();
 import play_icon from "@/assets/play_icon.png";
-import chevron_icon from "@/assets/chevron_icon.png";
-import delete_icon from "@/assets/delete_icon.png";
+import erase_icon from "@/assets/erase_icon.png";
 
-const { sequenceName, movements } = defineProps(["sequenceName", "movements"]);
+const { sequenceName, movements, id } = defineProps([
+  "sequenceName",
+  "movements",
+  "id",
+]);
 const isCollapsed = ref(false);
 
 function collapseSequence() {
@@ -26,20 +29,12 @@ function playSequence() {
     "
   >
     <div class="metadata">
-      <button class="button" @click="playSequence">
-        <img :src="play_icon" alt="arrow" />
+      <button @click="playSequence">
+        <img class="play_icon" :src="play_icon" alt="play_icon" />
       </button>
-      <h1>{{ sequenceName }}</h1>
-      <button class="button half" @click="collapseSequence">
-        <img
-          :src="chevron_icon"
-          alt="arrow"
-          :style="
-            isCollapsed
-              ? 'transform: rotate(0deg)'
-              : 'transform: rotate(-90deg)'
-          "
-        />
+      <h1 @click="collapseSequence">{{ sequenceName }}</h1>
+      <button @click="$emit('delete-sequence', id)">
+        <img class="erase_icon" :src="erase_icon" alt="erase_icon" />
       </button>
     </div>
     <div class="movements-holder" v-if="!isCollapsed">
@@ -52,84 +47,50 @@ function playSequence() {
 
 <style scoped>
 /* the button here are just clickable svg so disable everything except the cursor changr */
-.button {
-  margin: auto;
-  cursor: pointer;
-  outline: none;
-  border: none;
-  width: 90%;
-  height: 100%;
-  background-color: transparent;
-}
-
-.half {
-  width: 45% !important;
-}
-
-.button > img {
-  width: 32px;
-  height: 32px;
-}
-
 h1 {
-  color: var(--white-text);
+  color: var(--black-text);
+  font-size: var(--small);
   font-weight: 400;
   text-align: center;
-  margin-bottom: 5px;
-  margin-top: 5px;
   /* ellipsis */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.metadata {
-  display: grid;
-  grid-template-columns: 10% 70% 20%;
-  margin: auto;
-}
-
-.sequence {
-  background-color: var(--secondary);
-}
-
-.sequence:first-child {
-  margin-top: 0;
-  border-radius: 20px 20px 0 0;
-  margin-bottom: 10px;
-}
-
-.sequence-bottom-border-radius {
-  border-radius: 20px 20px 20px 20px;
-}
-
-.sequence-header {
-  display: grid;
-  grid-template-columns: 10% 70% 10%;
-  gap: 5%;
-  justify-items: center;
-  align-items: center;
-}
-
-.sequence-header img {
-  width: 32px !important;
-  height: 32px !important;
-}
-
-.sequence-header button {
-  background-color: transparent;
-  border: none;
   cursor: pointer;
 }
 
-.sequence-header h1 {
-  align-self: center;
-  margin: auto;
+button {
+  cursor: pointer;
+  outline: none;
+  border: none;
+  background-color: transparent;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.play_icon {
+  width: 32px;
+  height: 32px;
+}
+
+.erase_icon {
+  width: 24px;
+  height: 24px;
+}
+
+.metadata {
+  display: flex;
+  justify-content: space-between;
+}
+
+.sequence {
+  background-color: var(--blue);
+  margin-bottom: 20px;
 }
 
 .movements-holder {
-  background-color: var(--primary);
-  color: var(--white-text);
+  background-color: var(--faded-blue);
+  color: var(--black-text);
   overflow-x: auto;
   white-space: nowrap;
   padding: 10px;
@@ -155,12 +116,12 @@ h1 {
 }
 
 .movements-holder::-webkit-scrollbar-track {
-  background: var(--primary);
+  background: var(--black-text);
 }
 
 .movements-holder::-webkit-scrollbar-thumb {
-  background-color: var(--secondary);
+  background-color: var(--black-text);
   border-radius: 20px;
-  border: 3px solid var(--primary);
+  border: 3px solid var(--black-text);
 }
 </style>

@@ -10,21 +10,12 @@ const { isRecording, allSequences } = defineProps([
   "allSequences",
 ]);
 
-const handleNewSequence = () => {
-  emit("new-sequence");
+const handleDeleteSequence = (sequenceId) => {
+  emit("delete-sequence", sequenceId);
 };
 
-const handleDeleteSequence = (sequenceName) => {
-  emit("delete-sequence", sequenceName);
-  console.log(allSequences);
-};
-
-const handlePlaySequence = (sequenceName) => {
-  emit("play-sequence", sequenceName);
-};
-
-const deleteSequence = () => {
-  emit("delete-sequence");
+const handlePlaySequence = (sequenceId) => {
+  emit("play-sequence", sequenceId);
 };
 </script>
 
@@ -36,6 +27,7 @@ const deleteSequence = () => {
         v-for="sequence in allSequences"
         :sequenceName="sequence.name"
         :movements="sequence.movements"
+        :id="sequence.id"
         @delete-sequence="handleDeleteSequence"
         @play-sequence="handlePlaySequence"
       />
@@ -44,18 +36,11 @@ const deleteSequence = () => {
       <button
         class="button"
         :class="{ recording: isRecording }"
-        @click="handleNewSequence"
+        @click="$emit('new-sequence')"
       >
         {{ isRecording ? "save" : "new" }}
       </button>
     </div>
-    <button
-      class="button delete"
-      @click="deleteSequence"
-      v-if="allSequences.length > 0"
-    >
-      Delete a sequence
-    </button>
   </div>
 </template>
 
@@ -66,7 +51,7 @@ const deleteSequence = () => {
 
 .recording {
   background-color: var(--green) !important;
-  color: var(--secondary) !important;
+  color: var(--black-text) !important;
 }
 
 .button {
@@ -76,7 +61,7 @@ const deleteSequence = () => {
   height: 32px;
   border-radius: 20px;
   display: flex;
-  background-color: var(--secondary);
+  background-color: var(--grey);
   justify-content: center;
   align-items: center;
   cursor: pointer;
@@ -84,27 +69,33 @@ const deleteSequence = () => {
   outline: none;
   border: none;
   margin-bottom: 25px;
-  color: var(--white-text);
+  color: var(--black-text);
+  font-size: var(--small);
 }
 
 .button:hover {
-  background-color: var(--terciary);
+  background-color: var(--grey);
 }
 
 .button:active {
-  background-color: var(--terciary-hover);
+  background-color: var(--grey);
 }
 
 .delete {
-  background-color: red;
+  background-color: var(--red);
   margin-top: -5px;
   width: 144px;
 }
 
+.delete:hover {
+  background-color: var(--red);
+}
+
 h1 {
-  color: var(--white-text);
+  color: var(--black-text);
   font-weight: 400;
   margin-bottom: 40px;
   text-align: center;
+  font-size: var(--medium);
 }
 </style>

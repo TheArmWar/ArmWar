@@ -109,6 +109,7 @@ const handleNewSequence = () => {
     allSequences.value.push({
       name: currentSequenceName.value,
       movements: currentSequence.value,
+      id: Date.now(),
     });
   }
 };
@@ -173,21 +174,13 @@ const handleDeviceClicked = (deviceId) => {
   }
 };
 
-const handleDeleteSequence = () => {
-  const sequencename = prompt("Please enter the sequence name", "New Sequence");
-  if (sequencename == null || sequencename == "") {
-    toast.value.display(ToastType.Error, "Sequence name cannot be empty");
-    return;
-  }
-
+const handleDeleteSequence = (sequenceId) => {
   const found = allSequences.value.find(
-    (sequence) => sequence.name == sequencename,
+    (sequence) => sequence.id == sequenceId,
   );
-  if (!found) {
-    toast.value.display(ToastType.Error, "Sequence not found");
-  }
+
   for (var i = 0; i < allSequences.value.length; i++) {
-    if (allSequences.value[i].name == sequencename) {
+    if (allSequences.value[i].id == sequenceId) {
       allSequences.value.splice(i, 1);
       break;
     }
@@ -201,33 +194,19 @@ const handlePlaySequence = async (sequenceName) => {
   console.log("playing sequence", sequence);
 };
 
-const handleDeleteDevice = () => {
-  const devicename = prompt("Please enter the device name", "New Device");
-  if (devicename == null || devicename == "") {
-    toast.value.display(ToastType.Error, "Device name cannot be empty");
-    return;
-  }
+const handleDeleteDevice = (deviceId) => {
+  const found = allDevices.value.find((device) => device.id == deviceId);
 
-  const found = allDevices.value.find((device) => device.name == devicename);
-  if (!found) {
-    toast.value.display(ToastType.Error, "Device not found");
-    return;
-  } else if (found.connected) {
+  if (found.connected) {
     toast.value.display(ToastType.Error, "Can't delete a connected device");
     return;
   }
 
   for (var i = 0; i < allDevices.value.length; i++) {
-    if (allDevices.value[i].name == devicename) {
+    if (allDevices.value[i].id == deviceId) {
       allDevices.value.splice(i, 1);
       break;
     }
-  }
-
-  if (allDevices.value.length > 0) {
-    currentDevice.value = allDevices.value[0];
-  } else {
-    currentDevice.value = "";
   }
 };
 
@@ -268,6 +247,11 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+@font-face {
+  font-family: KronaOne;
+  src: url("@/assets/KronaOne-Regular.ttf");
+}
+
 .container {
   background-color: var(--background);
   height: 100vh;
@@ -281,7 +265,7 @@ onMounted(async () => {
 }
 
 .content {
-  background-color: var(--content);
+  background-color: var(--background);
   border-radius: 20px 20px 0 0;
   min-height: calc(100vh - 70px);
   display: grid;
@@ -295,20 +279,22 @@ onMounted(async () => {
 }
 
 * {
-  --background: #131d35;
+  --background: #ffffff;
 
-  --green: #aff8af;
+  --green: #a2da87;
+  --red: #fb6d6a;
 
-  --content: #242d44;
+  --blue: #8bc8f4;
+  --faded-blue: #a0c4de;
 
-  --primary: #2e364a;
-  --secondary: #53607c;
+  --grey: #d9d9d9;
 
-  --terciary: #404b62;
-  --terciary-hover: #2e364a;
+  --black-text: #000000;
 
-  --white-text: #f0f0f0;
+  --large: 50px;
+  --medium: 25px;
+  --small: 15px;
 
-  font-family: "AR One Sans", sans-serif;
+  font-family: "KronaOne", sans-serif;
 }
 </style>
