@@ -9,7 +9,8 @@ const { name } = defineProps(["name"]);
   border-radius: 0 0 20px 20px;
   margin-bottom: 20px;
   display: flex;
-  background-color: var(--secondary);
+  background-color: var(--background);
+  padding-top: 25px;
 }
 
 .menu {
@@ -24,7 +25,8 @@ h1 {
   margin: auto;
   padding-left: 10px;
   font-weight: 400;
-  color: var(--white-text);
+  color: var(--black-text);
+  font-size: var(--large);
   /* ellipsis */
   white-space: nowrap;
   overflow: hidden;
@@ -34,6 +36,7 @@ h1 {
 .name {
   justify-content: left;
   margin-left: 0px !important;
+  font-size: var(--medium);
 }
 
 img {

@@ -1,5 +1,4 @@
 <script setup>
-import { ref } from "vue";
 import { defineProps, getCurrentInstance } from "vue";
 
 const { emit } = getCurrentInstance();
@@ -49,7 +48,7 @@ const handleClick = () => {
   height: 72px;
   border-radius: 20px;
   display: flex;
-  background-color: var(--white-text);
+  background-color: var(--grey);
   justify-content: center;
   align-items: center;
   cursor: pointer;
@@ -59,11 +58,11 @@ const handleClick = () => {
 }
 
 .button:hover {
-  background-color: var(--terciary);
+  background-color: var(--purple);
 }
 
 .button:active {
-  background-color: var(--terciary-hover);
+  background-color: var(--faded-purple);
 }
 
 img {
