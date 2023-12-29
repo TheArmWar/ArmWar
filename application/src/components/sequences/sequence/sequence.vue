@@ -29,11 +29,11 @@ function playSequence() {
     "
   >
     <div class="metadata">
-      <button @click="playSequence">
+      <button class="play_btn" @click="playSequence">
         <img class="play_icon" :src="play_icon" alt="play_icon" />
       </button>
       <h1 @click="collapseSequence">{{ sequenceName }}</h1>
-      <button @click="$emit('delete-sequence', id)">
+      <button class="erase_btn" @click="$emit('delete-sequence', id)">
         <img class="erase_icon" :src="erase_icon" alt="erase_icon" />
       </button>
     </div>
@@ -62,25 +62,45 @@ h1 {
 button {
   cursor: pointer;
   outline: none;
-  border: none;
   background-color: transparent;
-  margin-left: 5px;
-  margin-right: 5px;
+  border: none;
+  margin-left: 10px;
+  margin-right: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
 }
 
 .play_icon {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
+  border-radius: 25px;
+  padding: 3px;
+  transition: background-color 0.3s;
+}
+
+.play_btn:hover .play_icon {
+  background-color: var(--green);
 }
 
 .erase_icon {
   width: 24px;
   height: 24px;
+  border-radius: 25px;
+  padding: 3px;
+  transition: background-color 0.3s;
+}
+
+.erase_btn:hover .erase_icon {
+  background-color: var(--red);
 }
 
 .metadata {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
 .sequence {

@@ -1,5 +1,4 @@
 <script setup>
-import { ref } from "vue";
 import { getCurrentInstance } from "vue";
 const { emit } = getCurrentInstance();
 
@@ -61,7 +60,7 @@ const handlePlaySequence = (sequenceId) => {
   height: 32px;
   border-radius: 20px;
   display: flex;
-  background-color: var(--grey);
+  background-color: var(--orange);
   justify-content: center;
   align-items: center;
   cursor: pointer;
@@ -74,21 +73,7 @@ const handlePlaySequence = (sequenceId) => {
 }
 
 .button:hover {
-  background-color: var(--grey);
-}
-
-.button:active {
-  background-color: var(--grey);
-}
-
-.delete {
-  background-color: var(--red);
-  margin-top: -5px;
-  width: 144px;
-}
-
-.delete:hover {
-  background-color: var(--red);
+  background-color: var(--faded-orange);
 }
 
 h1 {

@@ -9,14 +9,37 @@ defineProps(["name", "connected", "id"]);
 </script>
 
 <style scoped>
-.container {
+.device_container {
   width: 70%;
   margin-left: auto;
   margin-right: auto;
   margin-bottom: 20px;
   cursor: pointer;
   display: grid;
-  grid-template-columns: 80% 20%;
+  grid-template-columns: 90% 10%;
+  border-radius: 20px;
+}
+
+.erase_btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  outline: none;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.erase_icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 25px;
+  padding: 3px;
+  transition: background-color 0.3s;
+}
+
+.erase_btn:hover .erase_icon {
+  background-color: var(--red);
 }
 
 .connected {
@@ -25,17 +48,14 @@ defineProps(["name", "connected", "id"]);
 
 .arm_icon {
   margin-right: 20px;
-  width: 32px;
-  height: 32px;
-}
-
-.erase_icon {
-  width: 24px;
-  height: 24px;
+  width: 48px;
+  height: 48px;
 }
 
 a {
   display: flex;
+  justify-content: left;
+  align-items: center;
 }
 
 h1 {
@@ -46,22 +66,15 @@ h1 {
   text-overflow: ellipsis;
   font-size: var(--small);
 }
-
-button {
-  margin: auto;
-  outline: none;
-  background-color: transparent;
-  border: none;
-}
 </style>
 
 <template>
-  <div class="container">
+  <div class="device_container">
     <a @click="$emit('device-clicked', id)">
       <img class="arm_icon" :src="robot_arm_icon" alt="robot arm icon" />
       <h1 :class="{ connected: connected }">{{ name }}</h1>
     </a>
-    <button @click="$emit('delete-device', id)">
+    <button class="erase_btn" @click="$emit('delete-device', id)">
       <img class="erase_icon" :src="erase_icon" alt="erase icon" />
     </button>
   </div>

@@ -283,12 +283,12 @@ onMounted(async () => {
 
   --green: #a2da87;
   --red: #fb6d6a;
-
   --blue: #8bc8f4;
   --faded-blue: #a0c4de;
-
+  --orange: #fbb46a;
+  --faded-orange: #ffcb96;
+  --purple: #d196ff;
   --grey: #d9d9d9;
-
   --black-text: #000000;
 
   --large: 50px;

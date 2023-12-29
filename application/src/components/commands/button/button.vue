@@ -1,5 +1,4 @@
 <script setup>
-import { ref } from "vue";
 import { defineProps, getCurrentInstance } from "vue";
 
 const { emit } = getCurrentInstance();
@@ -59,11 +58,7 @@ const handleClick = () => {
 }
 
 .button:hover {
-  background-color: var(--grey);
-}
-
-.button:active {
-  background-color: var(--grey);
+  background-color: var(--purple);
 }
 
 img {
