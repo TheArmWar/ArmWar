@@ -61,6 +61,10 @@ const handleClick = () => {
   background-color: var(--purple);
 }
 
+.button:active {
+  background-color: var(--faded-purple);
+}
+
 img {
   width: 80%;
   height: 80%;

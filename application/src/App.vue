@@ -28,6 +28,8 @@ const isRecording = ref(false);
 const currentSequence = ref([]);
 const currentSequenceName = ref("");
 
+const selectedMode = ref("press");
+const timerValue = ref(1000);
 const toast = ref("");
 
 const handleClickParent = async (buttonName, image) => {
@@ -210,6 +212,28 @@ const handleDeleteDevice = (deviceId) => {
   }
 };
 
+const handleModeSwitch = (mode) => {
+  console.log("Mode: " + mode);
+  selectedMode.value = mode;
+};
+
+const handleTimerChanged = (value) => {
+  let parsedValue = parseInt(value);
+
+  if (isNaN(parsedValue)) {
+    toast.value.display(ToastType.Error, "Timer value is invalid");
+    return;
+  } else if (parsedValue < 0) {
+    toast.value.display(
+      ToastType.Error,
+      "Timer value must be a positive number",
+    );
+    return;
+  } else {
+    timerValue.value = parsedValue;
+  }
+};
+
 onMounted(async () => {
   protocol = await Protocol.load("armwar.proto");
   toast.value = new Toaster();
@@ -233,7 +257,13 @@ onMounted(async () => {
           @device-clicked="handleDeviceClicked"
           @delete-device="handleDeleteDevice"
         />
-        <Commands @button-clicked-parent="handleClickParent" />
+        <Commands
+          :selectedMode="selectedMode"
+          :timerValue="timerValue"
+          @button-clicked-parent="handleClickParent"
+          @mode-clicked="handleModeSwitch"
+          @timer-changed="handleTimerChanged"
+        />
         <Sequences
           @new-sequence="handleNewSequence"
           v-bind:isRecording="isRecording"
@@ -283,11 +313,15 @@ onMounted(async () => {
 
   --green: #a2da87;
   --red: #fb6d6a;
+  --faded-red: #ff9d9b;
   --blue: #8bc8f4;
   --faded-blue: #a0c4de;
   --orange: #fbb46a;
   --faded-orange: #ffcb96;
   --purple: #d196ff;
+  --faded-purple: #e0b9ff;
+  --pink: #ff96b3;
+  --faded-pink: #ffbccf;
   --grey: #d9d9d9;
   --black-text: #000000;
 

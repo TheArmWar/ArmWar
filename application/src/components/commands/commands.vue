@@ -1,6 +1,6 @@
 <script setup>
 import Button from "./button/button.vue";
-
+import Mode from "./mode/mode.vue";
 import rotate_cw_icon from "@/assets/rotate_cw_icon.png";
 import rotate_ccw_icon from "@/assets/rotate_ccw_icon.png";
 import release_icon from "@/assets/release_icon.png";
@@ -19,8 +19,18 @@ import { ref } from "vue";
 import { getCurrentInstance } from "vue";
 const { emit } = getCurrentInstance();
 
+const { selectedMode } = defineProps(["selectedMode", "timerValue"]);
+
 const handleButtonClick = (buttonName, image) => {
   emit("button-clicked-parent", buttonName, image);
+};
+
+const handleModeClicked = (mode) => {
+  emit("mode-clicked", mode);
+};
+
+const handleTimerChanged = (value) => {
+  emit("timer-changed", value);
 };
 </script>
 
@@ -101,6 +111,12 @@ const handleButtonClick = (buttonName, image) => {
         />
       </div>
     </div>
+    <Mode
+      :selectedMode="selectedMode"
+      :timerValue="timerValue"
+      @mode-clicked="handleModeClicked"
+      @timer-changed="handleTimerChanged"
+    />
   </div>
 </template>
 
