@@ -28,6 +28,8 @@ const isRecording = ref(false);
 const currentSequence = ref([]);
 const currentSequenceName = ref("");
 
+const selectedMode = ref("press");
+const timerValue = ref(1000);
 const toast = ref("");
 
 const handleClickParent = async (buttonName, image) => {
@@ -109,6 +111,7 @@ const handleNewSequence = () => {
     allSequences.value.push({
       name: currentSequenceName.value,
       movements: currentSequence.value,
+      id: Date.now(),
     });
   }
 };
@@ -173,21 +176,13 @@ const handleDeviceClicked = (deviceId) => {
   }
 };
 
-const handleDeleteSequence = () => {
-  const sequencename = prompt("Please enter the sequence name", "New Sequence");
-  if (sequencename == null || sequencename == "") {
-    toast.value.display(ToastType.Error, "Sequence name cannot be empty");
-    return;
-  }
-
+const handleDeleteSequence = (sequenceId) => {
   const found = allSequences.value.find(
-    (sequence) => sequence.name == sequencename,
+    (sequence) => sequence.id == sequenceId,
   );
-  if (!found) {
-    toast.value.display(ToastType.Error, "Sequence not found");
-  }
+
   for (var i = 0; i < allSequences.value.length; i++) {
-    if (allSequences.value[i].name == sequencename) {
+    if (allSequences.value[i].id == sequenceId) {
       allSequences.value.splice(i, 1);
       break;
     }
@@ -201,33 +196,41 @@ const handlePlaySequence = async (sequenceName) => {
   console.log("playing sequence", sequence);
 };
 
-const handleDeleteDevice = () => {
-  const devicename = prompt("Please enter the device name", "New Device");
-  if (devicename == null || devicename == "") {
-    toast.value.display(ToastType.Error, "Device name cannot be empty");
-    return;
-  }
+const handleDeleteDevice = (deviceId) => {
+  const found = allDevices.value.find((device) => device.id == deviceId);
 
-  const found = allDevices.value.find((device) => device.name == devicename);
-  if (!found) {
-    toast.value.display(ToastType.Error, "Device not found");
-    return;
-  } else if (found.connected) {
+  if (found.connected) {
     toast.value.display(ToastType.Error, "Can't delete a connected device");
     return;
   }
 
   for (var i = 0; i < allDevices.value.length; i++) {
-    if (allDevices.value[i].name == devicename) {
+    if (allDevices.value[i].id == deviceId) {
       allDevices.value.splice(i, 1);
       break;
     }
   }
+};
 
-  if (allDevices.value.length > 0) {
-    currentDevice.value = allDevices.value[0];
+const handleModeSwitch = (mode) => {
+  console.log("Mode: " + mode);
+  selectedMode.value = mode;
+};
+
+const handleTimerChanged = (value) => {
+  let parsedValue = parseInt(value);
+
+  if (isNaN(parsedValue)) {
+    toast.value.display(ToastType.Error, "Timer value is invalid");
+    return;
+  } else if (parsedValue < 0) {
+    toast.value.display(
+      ToastType.Error,
+      "Timer value must be a positive number",
+    );
+    return;
   } else {
-    currentDevice.value = "";
+    timerValue.value = parsedValue;
   }
 };
 
@@ -254,7 +257,13 @@ onMounted(async () => {
           @device-clicked="handleDeviceClicked"
           @delete-device="handleDeleteDevice"
         />
-        <Commands @button-clicked-parent="handleClickParent" />
+        <Commands
+          :selectedMode="selectedMode"
+          :timerValue="timerValue"
+          @button-clicked-parent="handleClickParent"
+          @mode-clicked="handleModeSwitch"
+          @timer-changed="handleTimerChanged"
+        />
         <Sequences
           @new-sequence="handleNewSequence"
           v-bind:isRecording="isRecording"
@@ -268,6 +277,11 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+@font-face {
+  font-family: KronaOne;
+  src: url("@/assets/KronaOne-Regular.ttf");
+}
+
 .container {
   background-color: var(--background);
   height: 100vh;
@@ -281,7 +295,7 @@ onMounted(async () => {
 }
 
 .content {
-  background-color: var(--content);
+  background-color: var(--background);
   border-radius: 20px 20px 0 0;
   min-height: calc(100vh - 70px);
   display: grid;
@@ -295,20 +309,26 @@ onMounted(async () => {
 }
 
 * {
-  --background: #131d35;
+  --background: #ffffff;
 
-  --green: #aff8af;
+  --green: #a2da87;
+  --red: #fb6d6a;
+  --faded-red: #ff9d9b;
+  --blue: #8bc8f4;
+  --faded-blue: #a0c4de;
+  --orange: #fbb46a;
+  --faded-orange: #ffcb96;
+  --purple: #d196ff;
+  --faded-purple: #e0b9ff;
+  --pink: #ff96b3;
+  --faded-pink: #ffbccf;
+  --grey: #d9d9d9;
+  --black-text: #000000;
 
-  --content: #242d44;
+  --large: 50px;
+  --medium: 25px;
+  --small: 15px;
 
-  --primary: #2e364a;
-  --secondary: #53607c;
-
-  --terciary: #404b62;
-  --terciary-hover: #2e364a;
-
-  --white-text: #f0f0f0;
-
-  font-family: "AR One Sans", sans-serif;
+  font-family: "KronaOne", sans-serif;
 }
 </style>

@@ -14,8 +14,8 @@
 #include "src/api/api.hpp"
 
 // Wifi settings
-const char *SSID = "***REMOVED***";
-const char *PASSWORD = "***REMOVED***";
+const char *SSID = "Bbox-26C04E63";
+const char *PASSWORD = "64jWvZjh7fPj145UQf";
 
 // Protobuf buffers size
 const int BUFFER_SIZE = 512;
