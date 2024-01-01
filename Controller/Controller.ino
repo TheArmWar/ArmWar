@@ -83,10 +83,10 @@ void setup()
 
 void loop()
 {
+    int motors[] = { 0, 3, 7, 11, 15 };
+
     if (TEST_START)
     {
-        int motors[] = { 0, 3, 7, 11, 15 };
-
         for (int i = 0; i < 3; i++)
         {
             pwmServo.setPWM(motors[i], 0, SERVO_M_ID);
@@ -94,11 +94,7 @@ void loop()
 
         TEST_START = false;
     }
-    down(pwmServo, 30);
-    delay(1000);
-    up(pwmServo, 30);
-    delay(1000);
 
     // Server listening
-    // server.loop();
+    server.loop();
 }

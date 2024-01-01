@@ -19,6 +19,15 @@ int base_pos[] = { 305, 305, 305, 305, 305 };
 // Motors pins
 int motors[] = { 0, 3, 7, 11, 15 };
 
+/**
+ * Motors:
+ * 0: Arm rotation
+ * 1: Down Vertical Axis
+ * 2: Upper Vertical Axis
+ * 3: Pliers rotation
+ * 4: Pliers
+ */
+
 int basePos(Adafruit_PWMServoDriver pwm)
 {
     int res = 0;
@@ -133,7 +142,7 @@ int forward(Adafruit_PWMServoDriver pwm, int nb_degree)
                          curr_pos[2] - (nb_degree * UNIT) };
     for (int i = 0; i < 2; i++)
     {
-        res &= pwm.setPWM(motors[i], 0, positions[i]);
+        res &= pwm.setPWM(motors[i + 1], 0, positions[i]);
     }
     return res;
 }
@@ -145,7 +154,7 @@ int backward(Adafruit_PWMServoDriver pwm, int nb_degree)
                          curr_pos[2] + (nb_degree * UNIT) };
     for (int i = 0; i < 2; i++)
     {
-        res &= pwm.setPWM(motors[i], 0, positions[i]);
+        res &= pwm.setPWM(motors[i + 1], 0, positions[i]);
     }
     return res;
 }
