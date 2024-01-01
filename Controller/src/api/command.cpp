@@ -57,6 +57,10 @@ int command(armwar_SpannedCommand command, Adafruit_PWMServoDriver pwm)
     }
 }
 
+/**
+ * Execute a command for a given duration
+ * Parse the time and transform it in number of execution
+*/
 int command(armwar_TimedCommand command, Adafruit_PWMServoDriver pwm)
 {
     Serial.println("Timed command");
@@ -68,8 +72,8 @@ int command(armwar_TimedCommand command, Adafruit_PWMServoDriver pwm)
         return -1;
     }
     int nb_degree = 1;
-    std::time_t start_time = std::time(nullptr);
-    while (std::time(nullptr) - start_time < command.duration)
+    int nb_exec = command.duration * 5;
+    for (int i = 0; i < nb_exec; i++)
     {
         if (fun(pwm, nb_degree) == 1)
         {
