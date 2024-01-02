@@ -7,12 +7,16 @@ import Devices from "./components/devices/devices.vue";
 import Commands from "./components/commands/commands.vue";
 import Sequences from "./components/sequences/sequences.vue";
 
+import { Toaster, ToastType } from "./scripts/toaster/toaster.js";
+
 // Imports protocol
 import {
   Protocol,
   MessageType,
   CommandType,
 } from "./scripts/protocol/protocol.js";
+
+const timeout_ms = 3000;
 
 var protocol = null;
 
@@ -24,104 +28,54 @@ const isRecording = ref(false);
 const currentSequence = ref([]);
 const currentSequenceName = ref("");
 
-function buildProtocolPayload(buttonName) {
-  /* Select the command */
-  var command = null;
-
-  switch (buttonName) {
-    case "release":
-      command = CommandType.Release;
-      break;
-
-    case "up":
-      command = CommandType.Up;
-      break;
-
-    case "press":
-      command = CommandType.Grab;
-      break;
-
-    case "rotate_ccw":
-      command = CommandType.RotateCcw;
-      break;
-
-    case "forward":
-      command = CommandType.Forward;
-      break;
-
-    case "rotate_cw":
-      command = CommandType.RotateCw;
-      break;
-
-    case "left":
-      command = CommandType.Left;
-      break;
-
-    case "backward":
-      command = CommandType.Backward;
-      break;
-
-    case "right":
-      command = CommandType.Right;
-      break;
-
-    case "down":
-      command = CommandType.Down;
-      break;
-
-    // FIXME add the other commands (set-zero and go-to-zero and stop) and messages
-  }
-
-  /* Build the payload object. The message sent is always an ArmCommand which wraps a traditional command. */
-  const message = protocol.getMessage(MessageType.ArmCommand);
-
-  /* Build the payload of ArmCommand with a TimedCommand */
-  // TODO: Manage different commands (Sequence, span, ect)
-  var payload = message.create({
-    timedCommand: {
-      command: command,
-      duration: 2,
-    },
-  });
-
-  return payload;
-}
+const selectedMode = ref("press");
+const timerValue = ref(1000);
+const toast = ref("");
 
 const handleClickParent = async (buttonName, image) => {
   if (isRecording.value) {
     currentSequence.value.push(image);
   } else {
-    if (currentDevice.value == null || currentDevice.value == "") {
-      alert("No device selected.");
-      return;
+    try {
+      if (currentDevice.value == null || currentDevice.value == "") {
+        toast.value.display(ToastType.Error, "No device selected");
+        return;
+      }
+
+      // Build a payload matching the buttonName command
+      const payload = protocol.buildCommand(buttonName);
+
+      const encodedPayload = protocol.encode(MessageType.ArmCommand, payload);
+
+      console.log("Sent payload: ");
+      console.log(payload);
+      console.log(encodedPayload);
+
+      // Sends the requests and wait for the response
+      const response = await fetch(`http://${currentDevice.value.ip}/command`, {
+        method: "POST",
+        body: encodedPayload,
+        signal: AbortSignal.timeout(timeout_ms),
+      });
+
+      // Gets the response body
+      const encodedText = await response.text();
+
+      // Decode the response
+      const responseObj = protocol.decode(
+        MessageType.CommandResponse,
+        encodedText,
+      );
+
+      console.log("Got payload: ");
+      console.log(responseObj);
+
+      if (responseObj.success)
+        toast.value.display(ToastType.Success, "Command success");
+      else toast.value.display(ToastType.Error, "Command failed");
+    } catch (error) {
+      toast.value.display(ToastType.Error, error.message);
     }
-
-    // Build a payload matching the buttonName command
-    const payload = buildProtocolPayload(buttonName);
-
-    const encodedPayload = protocol.encode(MessageType.ArmCommand, payload);
-
-    console.log("Sent payload: ");
-    console.log(payload);
-    console.log(encodedPayload);
-
-    // Sends the requests and wait for the response
-    const response = await fetch(`http://${currentDevice.value.ip}/command`, {
-      method: "POST",
-      body: encodedPayload,
-    });
-
-    // Gets the response body
-    const encodedText = await response.text();
-
-    // Decode the response
-    const responseObj = protocol.decode(
-      MessageType.CommandResponse,
-      encodedText,
-    );
-
-    console.log("Got payload: ");
-    console.log(responseObj);
   }
 };
 
@@ -136,7 +90,7 @@ const handleNewSequence = () => {
     );
     if (currentSequenceName.value == null || currentSequenceName.value == "") {
       isRecording.value = false;
-      alert("Sequence name cannot be empty");
+      toast.value.display(ToastType.Error, "Sequence name cannot be empty");
       return;
     }
     if (
@@ -145,19 +99,19 @@ const handleNewSequence = () => {
       )
     ) {
       isRecording.value = false;
-      alert("Sequence name already exists");
-
+      toast.value.display(ToastType.Error, "Sequence name already exists");
       return;
     }
   } else {
     if (currentSequence.value.length == 0) {
-      alert("Sequence cannot be empty");
+      toast.value.display(ToastType.Error, "Sequence cannot be empty");
       return;
     }
     console.log("final sequence", currentSequence.value);
     allSequences.value.push({
       name: currentSequenceName.value,
       movements: currentSequence.value,
+      id: Date.now(),
     });
   }
 };
@@ -166,35 +120,31 @@ const handleNewDevice = () => {
   const deviceName = prompt("Please enter the device name", "Device Name");
   const deviceIp = prompt("Please enter the device ip", "192.168.0.0");
   if (deviceName == null || deviceName == "") {
-    alert("Device name cannot be empty");
+    toast.value.display(ToastType.Error, "Device name cannot be empty");
     return;
   }
 
   if (deviceIp == null || deviceIp == "") {
-    alert("Device ip cannot be empty");
+    toast.value.display(ToastType.Error, "Device ip cannot be empty");
     return;
   }
 
   if (allDevices.value.find((device) => device.name == deviceName)) {
-    alert("Device name already exists");
+    toast.value.display(ToastType.Error, "Device name already exists");
     return;
   }
 
   if (allDevices.value.find((device) => device.ip == deviceIp)) {
-    alert("Device ip already exists");
+    toast.value.display(ToastType.Error, "Device ip already exists");
     return;
   }
 
   let newDevice = {
     name: deviceName,
     ip: deviceIp,
-    active: allDevices.value.length == 0,
+    connected: false,
     id: Date.now(),
   };
-
-  if (allDevices.value.length == 0) {
-    currentDevice.value = newDevice;
-  }
 
   allDevices.value.push(newDevice);
 
@@ -202,29 +152,37 @@ const handleNewDevice = () => {
 };
 
 const handleDeviceClicked = (deviceId) => {
-  for (var i = 0; i < allDevices.value.length; i++) {
-    if (allDevices.value[i].id == deviceId) {
-      currentDevice.value = allDevices.value[i];
-      break;
-    }
+  let device = allDevices.value.find((device) => device.id == deviceId);
+
+  // Disconnect if the clicked device is connected
+  if (device.connected) {
+    device.connected = false;
+    currentDevice.value = "";
+  }
+
+  // Device is not already connected so disconnect the previous connceted device
+  // and connect the clicked device
+  else {
+    let alreadyConnectedDevice = allDevices.value.find(
+      (device) => device.connected,
+    );
+
+    device.connected = true;
+
+    if (alreadyConnectedDevice != null)
+      alreadyConnectedDevice.connected = false;
+
+    currentDevice.value = device;
   }
 };
 
-const handleDeleteSequence = () => {
-  const sequencename = prompt("Please enter the sequence name", "New Sequence");
-  if (sequencename == null || sequencename == "") {
-    alert("Sequence name cannot be empty");
-    return;
-  }
-
+const handleDeleteSequence = (sequenceId) => {
   const found = allSequences.value.find(
-    (sequence) => sequence.name == sequencename,
+    (sequence) => sequence.id == sequenceId,
   );
-  if (!found) {
-    alert("Sequence not found");
-  }
+
   for (var i = 0; i < allSequences.value.length; i++) {
-    if (allSequences.value[i].name == sequencename) {
+    if (allSequences.value[i].id == sequenceId) {
       allSequences.value.splice(i, 1);
       break;
     }
@@ -238,33 +196,53 @@ const handlePlaySequence = async (sequenceName) => {
   console.log("playing sequence", sequence);
 };
 
-const handleDeleteDevice = () => {
-  const devicename = prompt("Please enter the device name", "New Device");
-  if (devicename == null || devicename == "") {
-    alert("Device name cannot be empty");
+const handleDeleteDevice = (deviceId) => {
+  const found = allDevices.value.find((device) => device.id == deviceId);
+
+  if (found.connected) {
+    toast.value.display(ToastType.Error, "Can't delete a connected device");
     return;
   }
 
-  const found = allDevices.value.find((device) => device.name == devicename);
-  if (!found) {
-    alert("Device not found");
-  }
   for (var i = 0; i < allDevices.value.length; i++) {
-    if (allDevices.value[i].name == devicename) {
+    if (allDevices.value[i].id == deviceId) {
       allDevices.value.splice(i, 1);
       break;
     }
   }
+};
 
-  if (allDevices.value.length > 0) {
-    currentDevice.value = allDevices.value[0];
+const handleModeSwitch = (mode) => {
+  console.log("Mode: " + mode);
+  selectedMode.value = mode;
+};
+
+const handleTimerChanged = (value) => {
+  let parsedValue = parseInt(value);
+
+  if (isNaN(parsedValue)) {
+    toast.value.display(ToastType.Error, "Timer value is invalid");
+    return;
+  } else if (parsedValue < 0) {
+    toast.value.display(
+      ToastType.Error,
+      "Timer value must be a positive number",
+    );
+    return;
   } else {
-    currentDevice.value = "";
+    timerValue.value = parsedValue;
   }
 };
 
 onMounted(async () => {
   protocol = await Protocol.load("armwar.proto");
+  toast.value = new Toaster();
+
+  // Force dismiss specific toast
+  // instance.dismiss();
+
+  // Dismiss all opened toast immediately
+  // $toast.clear();
 });
 </script>
 
@@ -279,7 +257,13 @@ onMounted(async () => {
           @device-clicked="handleDeviceClicked"
           @delete-device="handleDeleteDevice"
         />
-        <Commands @button-clicked-parent="handleClickParent" />
+        <Commands
+          :selectedMode="selectedMode"
+          :timerValue="timerValue"
+          @button-clicked-parent="handleClickParent"
+          @mode-clicked="handleModeSwitch"
+          @timer-changed="handleTimerChanged"
+        />
         <Sequences
           @new-sequence="handleNewSequence"
           v-bind:isRecording="isRecording"
@@ -293,6 +277,11 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+@font-face {
+  font-family: KronaOne;
+  src: url("@/assets/KronaOne-Regular.ttf");
+}
+
 .container {
   background-color: var(--background);
   height: 100vh;
@@ -306,7 +295,7 @@ onMounted(async () => {
 }
 
 .content {
-  background-color: var(--content);
+  background-color: var(--background);
   border-radius: 20px 20px 0 0;
   min-height: calc(100vh - 70px);
   display: grid;
@@ -320,20 +309,26 @@ onMounted(async () => {
 }
 
 * {
-  --background: #131d35;
+  --background: #ffffff;
 
-  --green: #aff8af;
+  --green: #a2da87;
+  --red: #fb6d6a;
+  --faded-red: #ff9d9b;
+  --blue: #8bc8f4;
+  --faded-blue: #a0c4de;
+  --orange: #fbb46a;
+  --faded-orange: #ffcb96;
+  --purple: #d196ff;
+  --faded-purple: #e0b9ff;
+  --pink: #ff96b3;
+  --faded-pink: #ffbccf;
+  --grey: #d9d9d9;
+  --black-text: #000000;
 
-  --content: #242d44;
+  --large: 50px;
+  --medium: 25px;
+  --small: 15px;
 
-  --primary: #2e364a;
-  --secondary: #53607c;
-
-  --terciary: #404b62;
-  --terciary-hover: #2e364a;
-
-  --white-text: #f0f0f0;
-
-  font-family: "AR One Sans", sans-serif;
+  font-family: "KronaOne", sans-serif;
 }
 </style>

@@ -1,5 +1,4 @@
 <script setup>
-import { ref } from "vue";
 import { getCurrentInstance } from "vue";
 const { emit } = getCurrentInstance();
 
@@ -10,17 +9,12 @@ const { isRecording, allSequences } = defineProps([
   "allSequences",
 ]);
 
-const handleNewSequence = () => {
-  emit("new-sequence");
+const handleDeleteSequence = (sequenceId) => {
+  emit("delete-sequence", sequenceId);
 };
 
-const handleDeleteSequence = (sequenceName) => {
-  emit("delete-sequence", sequenceName);
-  console.log(allSequences);
-};
-
-const handlePlaySequence = (sequenceName) => {
-  emit("play-sequence", sequenceName);
+const handlePlaySequence = (sequenceId) => {
+  emit("play-sequence", sequenceId);
 };
 
 const deleteSequence = () => {
@@ -36,6 +30,7 @@ const deleteSequence = () => {
         v-for="sequence in allSequences"
         :sequenceName="sequence.name"
         :movements="sequence.movements"
+        :id="sequence.id"
         @delete-sequence="handleDeleteSequence"
         @play-sequence="handlePlaySequence"
       />
@@ -44,18 +39,11 @@ const deleteSequence = () => {
       <button
         class="button"
         :class="{ recording: isRecording }"
-        @click="handleNewSequence"
+        @click="$emit('new-sequence')"
       >
         {{ isRecording ? "save" : "new" }}
       </button>
     </div>
-    <button
-      class="button delete"
-      @click="deleteSequence"
-      v-if="allSequences.length > 0"
-    >
-      Delete a sequence
-    </button>
   </div>
 </template>
 
@@ -66,7 +54,7 @@ const deleteSequence = () => {
 
 .recording {
   background-color: var(--green) !important;
-  color: var(--secondary) !important;
+  color: var(--black-text) !important;
 }
 
 .button {
@@ -76,7 +64,7 @@ const deleteSequence = () => {
   height: 32px;
   border-radius: 20px;
   display: flex;
-  background-color: var(--secondary);
+  background-color: var(--orange);
   justify-content: center;
   align-items: center;
   cursor: pointer;
@@ -84,15 +72,12 @@ const deleteSequence = () => {
   outline: none;
   border: none;
   margin-bottom: 25px;
-  color: var(--white-text);
+  color: var(--black-text);
+  font-size: var(--small);
 }
 
 .button:hover {
-  background-color: var(--terciary);
-}
-
-.button:active {
-  background-color: var(--terciary-hover);
+  background-color: var(--faded-orange);
 }
 
 .delete {
@@ -102,9 +87,10 @@ const deleteSequence = () => {
 }
 
 h1 {
-  color: var(--white-text);
+  color: var(--black-text);
   font-weight: 400;
   margin-bottom: 40px;
   text-align: center;
+  font-size: var(--medium);
 }
 </style>
