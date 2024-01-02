@@ -7,13 +7,16 @@
 // API
 #include "src/api/api.hpp"
 
+// Config
+#include "src/config.hpp"
+
 /* -------------------------------------------------------------------------- */
 // Wifi settings
 const char* SSID = "***REMOVED***";
 const char* PASSWORD = "***REMOVED***";
 
 // HTTP server global variable
-HTTPServer server = HTTPServer(80);
+HTTPServer server = HTTPServer(SERVER_PORT);
 
 // Motors api global variable
 Motors motors = Motors({ 0, 3, 7, 11, 15 });
@@ -31,7 +34,7 @@ Motors motors = Motors({ 0, 3, 7, 11, 15 });
 void setup()
 {
     // Serial setup
-    Serial.begin(115200);
+    Serial.begin(SERIAL_BAUDRATE);
 
     // Wifi setup
     wifiConnect(SSID, PASSWORD);

@@ -8,9 +8,16 @@
 
 /*----------------------------------------------------------------------------*/
 /**
+ * Arduino Specific configuration
+ */
+#define SERIAL_BAUDRATE 115200 // Serial baudrate
+
+/*----------------------------------------------------------------------------*/
+/**
  * Server configuration
  */
 #define SERVER_BUFFER_SIZE 512 // Size of the buffer used to receive
+#define SERVER_PORT 80 // Port used by the server
 
 /*----------------------------------------------------------------------------*/
 /**
