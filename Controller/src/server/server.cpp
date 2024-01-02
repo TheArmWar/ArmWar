@@ -8,9 +8,8 @@
 #include <string>
 
 #include "../api/command.hpp"
+#include "../config.hpp"
 #include "armwar.pb.h"
-
-#define BUFFER_SIZE 512
 
 // Enhance code readability
 using namespace httpsserver;
@@ -113,7 +112,7 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
 {
     armwar_ArmCommand cmd = armwar_ArmCommand_init_zero;
     armwar_CommandResponse cmdResponse = armwar_CommandResponse_init_zero;
-    uint8_t respBuffer[BUFFER_SIZE] = { 0 };
+    uint8_t respBuffer[SERVER_BUFFER_SIZE] = { 0 };
     uint8_t* buffer;
     size_t buf_size;
     size_t buf_len;
@@ -121,8 +120,8 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
     std::string errorMessage{ "" };
 
     res->setHeader("Access-Control-Allow-Origin", "*");
-    buffer = (uint8_t*)malloc(BUFFER_SIZE);
-    buf_size = BUFFER_SIZE;
+    buffer = (uint8_t*)malloc(SERVER_BUFFER_SIZE);
+    buf_size = SERVER_BUFFER_SIZE;
     buf_len = 0;
     success = true;
 
@@ -131,12 +130,12 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
     // sequences and nanopb decoding need the full buffer.
     while (!req->requestComplete())
     {
-        size_t size = req->readBytes(buffer, BUFFER_SIZE);
+        size_t size = req->readBytes(buffer, SERVER_BUFFER_SIZE);
         buf_len += size;
-        if (size >= BUFFER_SIZE)
+        if (size >= SERVER_BUFFER_SIZE)
         {
             uint8_t* new_buffer =
-                (uint8_t*)realloc(buffer, buf_size + BUFFER_SIZE);
+                (uint8_t*)realloc(buffer, buf_size + SERVER_BUFFER_SIZE);
 
             if (new_buffer == NULL)
             {
@@ -146,7 +145,7 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
             }
 
             buffer = new_buffer;
-            buf_size += BUFFER_SIZE;
+            buf_size += SERVER_BUFFER_SIZE;
         }
     }
 
@@ -162,21 +161,20 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
     switch (cmd.which_command)
     {
     case armwar_ArmCommand_timed_command_tag:
-        // TODO: need api Timed command handler
-        command(cmd.command.timed_command, *g_motors);
         Serial.println("Received Timed command");
+        command(cmd.command.timed_command, *g_motors);
         break;
     case armwar_ArmCommand_timed_sequence_tag:
-        // TODO: need api Timed sequence handler
         Serial.println("Received Timed sequence");
+        // TODO: need api Timed sequence handler
         break;
     case armwar_ArmCommand_spanned_command_tag:
-        // TODO: need api Spanned command handler
         Serial.println("Received Spanned command");
+        // TODO: need api Spanned command handler
         break;
     case armwar_ArmCommand_spanned_sequence_tag:
-        // TODO: need api Spanned sequence handler
         Serial.println("Received Spanned sequence");
+        // TODO: need api Spanned sequence handler
         break;
     case armwar_ArmCommand_stated_command_tag:
         Serial.println("Received Stated command");
@@ -194,7 +192,8 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
 sendResponse:
     free(buffer);
     cmdResponse.success = success;
-    pb_ostream_t ostream = pb_ostream_from_buffer(respBuffer, BUFFER_SIZE);
+    pb_ostream_t ostream =
+        pb_ostream_from_buffer(respBuffer, SERVER_BUFFER_SIZE);
     cmdResponse.message.arg = (void*)&errorMessage;
     cmdResponse.message.funcs.encode = &encode_string;
     success = pb_encode(&ostream, armwar_CommandResponse_fields, &cmdResponse);

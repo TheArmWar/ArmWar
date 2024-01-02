@@ -4,17 +4,6 @@
 #include <initializer_list>
 #include <vector>
 
-#define SERVO_MIN 90 // This is the 'minimum' pulse length count (out of 4096)
-#define SERVO_MAX 420 // This is the 'maximum' pulse length count (out of 4096)
-#define SERVO_MID 305 // Mid position
-#define SERVO_ROTATE_90 170 // 90 degrees rotation
-
-#define SERVO_OSC_FREQ 27000000 // ?
-#define SERVO_PWM_FREQ 50 // 50 Hz
-#define SERVO_INTERVALLE 2000 // 2 seconds
-
-#define SERVO_UNIT 1 // 2 unit ~= 1 degree
-
 /**
  * @class Motors
  * @brief Wrapper around the Adafruit_PWMServoDriver lib to handle multiple
@@ -60,6 +49,28 @@ public:
      * @return Motors::Status
      */
     Motors::Status setPos(uint8_t n, uint16_t pos);
+
+    /**
+     * Set the position of the motor "n" with the position "pos"
+     * @param n: The nth motor of the pins list
+     * @param pos: The position that will be set to the nth motor
+     * @return Motors::Status
+     */
+    Motors::Status setPosPlier(uint8_t n, uint16_t pos);
+
+    /**
+     * Set the maximal position of the motor "n"
+     * @param n: The nth motor of the pins list
+     * @return Motors::Status
+     */
+    Motors::Status setPosPlierMax(uint8_t n);
+
+    /**
+     * Set the minimal position of the motor "n"
+     * @param n: The nth motor of the pins list
+     * @return Motors::Status
+     */
+    Motors::Status setPosPlierMin(uint8_t n);
 
     /**
      * Set the maximal position of the motor "n"

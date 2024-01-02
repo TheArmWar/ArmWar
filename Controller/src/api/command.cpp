@@ -18,7 +18,6 @@ int exec_command(func fun, Motors motors, int nb_degree)
         }
         if (fun(motors, nb_degree) == 1)
         {
-            printf("Error while executing command\n");
             return 1;
         }
     }
@@ -34,23 +33,24 @@ int exec_command(func fun, Motors motors, int nb_degree)
  */
 int command(armwar_StatedCommand command, Motors motors)
 {
-    func fun;
-    if (parse_command(command.command) == NULL)
-    {
-        printf("Command not found\n");
+    func fun = parse_command(command.command);
+
+    if (fun(motors, command.command) == NULL)
         return -1;
-    }
 
     if (command.start)
     {
-        stated_thread.SetName("test");
+        stated_thread.SetName("StatedThread");
         stated_thread.SetThread(std::thread(exec_command, fun, motors, 1));
     }
+
     else
     {
         stated_thread.stop = true;
         stated_thread.t1.join();
     }
+
+    return 0;
 }
 
 /**
@@ -62,18 +62,12 @@ int command(armwar_StatedCommand command, Motors motors)
  */
 int command(armwar_SpannedCommand command, Motors motors)
 {
-    func fun;
-    if (parse_command(command.command) == NULL)
-    {
-        printf("Command not found\n");
-        return -1;
-    }
+    func fun = parse_command(command.command);
 
-    if (fun(motors, command.span) == 1)
-    {
-        printf("Error while executing command\n");
-        return 1;
-    }
+    if (fun == NULL)
+        return -1;
+
+    return fun(motors, command.span);
 }
 
 /**
@@ -85,21 +79,18 @@ int command(armwar_SpannedCommand command, Motors motors)
  */
 int command(armwar_TimedCommand command, Motors motors)
 {
-    Serial.println("Timed command");
-    func fun;
-    fun = parse_command(command.command);
-    if (parse_command(command.command) == NULL)
-    {
-        printf("Command not found\n");
-        return -1;
-    }
+    func fun = parse_command(command.command);
+    // int nb_exec = command.duration * 10;
+    int nb_exec = 1;
     int nb_degree = 1;
-    int nb_exec = command.duration * 5;
+
+    if (fun == NULL)
+        return -1;
+
     for (int i = 0; i < nb_exec; i++)
     {
         if (fun(motors, nb_degree) == 1)
         {
-            printf("Error while executing command\n");
             return 1;
         }
     }

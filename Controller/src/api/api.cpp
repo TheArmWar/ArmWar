@@ -1,5 +1,6 @@
 #include "api.hpp"
 
+#include "../config.hpp"
 /**
  * Motors:
  * 0: Arm rotation
@@ -18,7 +19,8 @@ int basePos(Motors& motors)
 {
     Motors::Status res = Motors::Status::SUCCESS;
 
-    for (int i = 0; i < 5; i++)
+    // All motors except the Pliers motor
+    for (int i = 0; i < 4; i++)
     {
         res = motors.setPosMid(i);
         if (res == Motors::Status::ERROR)
@@ -229,10 +231,13 @@ int grab(Motors& motors, int nb_degree)
     int grab_pos = motors.getPos(4);
     Motors::Status res = Motors::Status::SUCCESS;
 
+    Serial.print("Je grab [curr_pos: ");
+    Serial.print(grab_pos);
+    Serial.println("]");
     for (int i = 0; i < nb_degree; i++)
     {
         grab_pos += SERVO_UNIT;
-        res = motors.setPos(4, grab_pos);
+        res = motors.setPosPlier(4, grab_pos);
         if (res == Motors::Status::ERROR)
             return res;
     }
@@ -251,10 +256,14 @@ int release(Motors& motors, int nb_degree)
     int release_pos = motors.getPos(4);
     Motors::Status res = Motors::Status::SUCCESS;
 
+    Serial.print("Je release [curr_pos: ");
+    Serial.print(release_pos);
+    Serial.println("]");
+
     for (int i = 0; i < nb_degree; i++)
     {
         release_pos -= SERVO_UNIT;
-        res = motors.setPos(4, release_pos);
+        res = motors.setPosPlier(4, release_pos);
         if (res == Motors::Status::ERROR)
             return res;
     }
