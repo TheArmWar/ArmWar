@@ -3,6 +3,9 @@
 #include "../server/armwar.pb.h"
 #include "motors.hpp"
 
+/**
+ * Function types
+ */
 typedef int (*func)(Motors&, int);
 typedef func (*pm)();
 
