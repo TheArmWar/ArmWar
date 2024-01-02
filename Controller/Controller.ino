@@ -90,6 +90,7 @@ void loop()
         for (int i = 0; i < 3; i++)
         {
             pwmServo.setPWM(motors[i], 0, SERVO_M_ID);
+            Serial.println(pwmServo.getPWM(motors[i], true));
         }
 
         TEST_START = false;
