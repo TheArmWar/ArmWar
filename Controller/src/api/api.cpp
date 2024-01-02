@@ -10,12 +10,6 @@
 #define TURN_90 170
 #define UNIT 1 // 2 unit ~= 1 degree
 
-// Current position of all motors
-int curr_pos[] = { 305, 305, 305, 305, 305 };
-
-// Base position of all motors
-int base_pos[] = { 305, 305, 305, 305, 305 };
-
 // Motors pins
 int motors[] = { 0, 3, 7, 11, 15 };
 
@@ -28,48 +22,62 @@ int motors[] = { 0, 3, 7, 11, 15 };
  * 4: Pliers
  */
 
-int basePos(Adafruit_PWMServoDriver pwm)
+uint16_t get(Adafruit_PWMServoDriver& pwm, uint8_t pin)
 {
-    int res = 0;
-    for (int i = 0; i < 3; i++)
-    {
-        res &= pwm.setPWM(motors[i], 0, base_pos[i]);
-    }
+    return pwm.getPWM(pin, true);
 }
 
-int left(Adafruit_PWMServoDriver pwm, int nb_degree)
+int set(Adafruit_PWMServoDriver& pwm, uint8_t pin, uint16_t position)
 {
-    int left_pos = curr_pos[0];
+    if (position < SERVOMIN)
+        position = SERVOMIN;
+    else if (position > SERVOMAX)
+        position = SERVOMAX;
+
+    return pwm.setPWM(pin, 0, position);
+}
+
+int basePos(Adafruit_PWMServoDriver& pwm)
+{
     int res = 0;
-    for (int i = 0; i < nb_degree; i++)
-    {
-        left_pos += UNIT;
-        if (left_pos < SERVOMIN)
-        {
-            left_pos = SERVOMIN;
-        }
-        res &= pwm.setPWM(motors[0], 0, left_pos);
-        delay(100);
-    }
-    curr_pos[0] = left_pos;
+
+    for (int i = 0; i < 4; i++)
+        res |= set(pwm, motors[i], SERVOMID);
+
     return res;
 }
 
-int right(Adafruit_PWMServoDriver pwm, int nb_degree)
+int left(Adafruit_PWMServoDriver& pwm, int nb_degree)
 {
-    int right_pos = curr_pos[0];
+    int left_pos = get(pwm, motors[0]);
     int res = 0;
+
+    for (int i = 0; i < nb_degree; i++)
+    {
+        left_pos += UNIT;
+
+        res |= set(pwm, motors[0], left_pos);
+
+        // delay(100);
+    }
+
+    return res;
+}
+
+int right(Adafruit_PWMServoDriver& pwm, int nb_degree)
+{
+    int right_pos = get(pwm, motors[0]);
+    int res = 0;
+
     for (int i = 0; i < nb_degree; i++)
     {
         right_pos -= UNIT;
-        if (right_pos > SERVOMAX)
-        {
-            right_pos = SERVOMAX;
-        }
-        res &= pwm.setPWM(motors[0], 0, right_pos);
-        delay(100);
+
+        res |= set(pwm, motors[0], right_pos);
+
+        // delay(100);
     }
-    curr_pos[0] = right_pos;
+
     return res;
 }
 
@@ -77,30 +85,23 @@ int right(Adafruit_PWMServoDriver pwm, int nb_degree)
  * Motor[1] -> add
  * Motor[2] -> sub
  */
-int up(Adafruit_PWMServoDriver pwm, int nb_degree)
+int up(Adafruit_PWMServoDriver& pwm, int nb_degree)
 {
-    int up_pos_1 = curr_pos[1];
-    int up_pos_2 = curr_pos[2];
+    int up_pos_1 = get(pwm, motors[1]);
+    int up_pos_2 = get(pwm, motors[2]);
     int res = 0;
+
     for (int i = 0; i < nb_degree; i++)
     {
         up_pos_1 += UNIT;
-        if (up_pos_1 > SERVOMAX)
-        {
-            up_pos_1 = SERVOMAX;
-        }
-        res &= pwm.setPWM(motors[1], 0, up_pos_1);
+        res |= set(pwm, motors[1], up_pos_1);
 
         up_pos_2 -= UNIT;
-        if (up_pos_2 < SERVOMIN)
-        {
-            up_pos_2 = SERVOMIN;
-        }
-        res &= pwm.setPWM(motors[2], 0, up_pos_2);
-        delay(100);
+        res |= set(pwm, motors[2], up_pos_2);
+
+        // delay(100);
     }
-    curr_pos[1] = up_pos_1;
-    curr_pos[2] = up_pos_2;
+
     return res;
 }
 
@@ -108,126 +109,118 @@ int up(Adafruit_PWMServoDriver pwm, int nb_degree)
  * Motor[1] -> sub
  * Motor[2] -> add
  */
-int down(Adafruit_PWMServoDriver pwm, int nb_degree)
+int down(Adafruit_PWMServoDriver& pwm, int nb_degree)
 {
-    int down_pos_1 = curr_pos[1];
-    int down_pos_2 = curr_pos[2];
+    int down_pos_1 = get(pwm, motors[1]);
+    int down_pos_2 = get(pwm, motors[2]);
     int res = 0;
+
     for (int i = 0; i < nb_degree; i++)
     {
         down_pos_1 -= UNIT;
-        if (down_pos_1 < SERVOMIN)
-        {
-            down_pos_1 = SERVOMIN;
-        }
-        res &= pwm.setPWM(motors[1], 0, down_pos_1);
+        res |= set(pwm, motors[1], down_pos_1);
 
         down_pos_2 += UNIT;
-        if (down_pos_2 > SERVOMAX)
-        {
-            down_pos_2 = SERVOMAX;
-        }
-        res &= pwm.setPWM(motors[2], 0, down_pos_2);
-        delay(100);
+        res |= set(pwm, motors[2], down_pos_2);
+        // delay(100);
     }
-    curr_pos[1] = down_pos_1;
-    curr_pos[2] = down_pos_2;
+
     return res;
 }
 
-int forward(Adafruit_PWMServoDriver pwm, int nb_degree)
+int forward(Adafruit_PWMServoDriver& pwm, int nb_degree)
 {
+    int positions[2] = { get(pwm, motors[1]) - (nb_degree * UNIT),
+                         get(pwm, motors[2]) - (nb_degree * UNIT) };
     int res = 0;
-    int positions[2] = { curr_pos[1] - (nb_degree * UNIT),
-                         curr_pos[2] - (nb_degree * UNIT) };
+
     for (int i = 0; i < 2; i++)
     {
-        res &= pwm.setPWM(motors[i + 1], 0, positions[i]);
+        res |= set(pwm, motors[i + 1], positions[i]);
     }
+
     return res;
 }
 
-int backward(Adafruit_PWMServoDriver pwm, int nb_degree)
+int backward(Adafruit_PWMServoDriver& pwm, int nb_degree)
 {
     int res = 0;
-    int positions[2] = { curr_pos[1] + (nb_degree * UNIT),
-                         curr_pos[2] + (nb_degree * UNIT) };
+    int positions[2] = { get(pwm, motors[1]) + (nb_degree * UNIT),
+                         get(pwm, motors[2]) + (nb_degree * UNIT) };
+
     for (int i = 0; i < 2; i++)
     {
-        res &= pwm.setPWM(motors[i + 1], 0, positions[i]);
+        res |= set(pwm, motors[i + 1], positions[i]);
     }
+
     return res;
 }
 
-int rotate_cw(Adafruit_PWMServoDriver pwm, int nb_degree)
+int rotate_cw(Adafruit_PWMServoDriver& pwm, int nb_degree)
 {
-    int rotate_pos = curr_pos[3];
+    int rotate_pos = get(pwm, motors[3]);
     int res = 0;
+
     for (int i = 0; i < nb_degree; i++)
     {
         rotate_pos += UNIT;
-        if (rotate_pos > SERVOMAX)
-        {
-            rotate_pos = SERVOMAX;
-        }
-        res &= pwm.setPWM(motors[3], 0, rotate_pos);
-        delay(100);
+
+        res |= set(pwm, motors[3], rotate_pos);
+
+        // delay(100);
     }
-    curr_pos[3] = rotate_pos;
+
     return res;
 }
 
-int rotate_ccw(Adafruit_PWMServoDriver pwm, int nb_degree)
+int rotate_ccw(Adafruit_PWMServoDriver& pwm, int nb_degree)
 {
-    int rotate_pos = curr_pos[3];
+    int rotate_pos = get(pwm, motors[3]);
     int res = 0;
+
     for (int i = 0; i < nb_degree; i++)
     {
         rotate_pos -= UNIT;
-        if (rotate_pos < SERVOMIN)
-        {
-            rotate_pos = SERVOMIN;
-        }
-        res &= pwm.setPWM(motors[3], 0, rotate_pos);
-        delay(100);
+
+        res |= set(pwm, motors[3], rotate_pos);
+
+        // delay(100);
     }
-    curr_pos[3] = rotate_pos;
+
     return res;
 }
 
-int grab(Adafruit_PWMServoDriver pwm, int nb_degree)
+int grab(Adafruit_PWMServoDriver& pwm, int nb_degree)
 {
-    int grab_pos = curr_pos[4];
+    int grab_pos = get(pwm, motors[4]);
     int res = 0;
+
     for (int i = 0; i < nb_degree; i++)
     {
         grab_pos += UNIT;
-        if (grab_pos > SERVOMAX)
-        {
-            grab_pos = SERVOMAX;
-        }
-        res &= pwm.setPWM(motors[4], 0, grab_pos);
-        delay(100);
+
+        res |= set(pwm, motors[4], grab_pos);
+
+        // delay(100);
     }
-    curr_pos[4] = grab_pos;
+
     return res;
 }
 
-int release(Adafruit_PWMServoDriver pwm, int nb_degree)
+int release(Adafruit_PWMServoDriver& pwm, int nb_degree)
 {
-    int release_pos = curr_pos[4];
+    int release_pos = get(pwm, motors[4]);
     int res = 0;
+
     for (int i = 0; i < nb_degree; i++)
     {
         release_pos -= UNIT;
-        if (release_pos < SERVOMIN)
-        {
-            release_pos = SERVOMIN;
-        }
-        res &= pwm.setPWM(motors[4], 0, release_pos);
-        delay(100);
+
+        res |= set(pwm, motors[4], release_pos);
+
+        // delay(100);
     }
-    curr_pos[4] = release_pos;
+
     return res;
 }
 
