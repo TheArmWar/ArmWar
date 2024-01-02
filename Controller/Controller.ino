@@ -13,6 +13,9 @@
 // API
 #include "src/api/api.hpp"
 
+// Motors api
+#include "src/api/motors.hpp"
+
 // Wifi settings
 const char* SSID = "Bbox-49E1F8AE";
 const char* PASSWORD = "17021320";
@@ -28,8 +31,7 @@ const int SERVO_M_ID = 305;
 const int sens = 1;
 bool TEST_START = true;
 
-// PWM ServoDriver
-Adafruit_PWMServoDriver pwmServo = Adafruit_PWMServoDriver();
+Motors motors = Motors({ 0, 3, 7, 11, 15 });
 
 /**
  * wifiConnect function
@@ -57,13 +59,6 @@ void wifiConnect(const char* ssid, const char* password)
     Serial.println(WiFi.localIP());
 }
 
-void controllerSetup()
-{
-    pwmServo.begin();
-    pwmServo.setOscillatorFrequency(27000000);
-    pwmServo.setPWMFreq(PWM_FREQ);
-}
-
 void setup()
 {
     // Serial setup
@@ -72,25 +67,23 @@ void setup()
     // Wifi setup
     wifiConnect(SSID, PASSWORD);
 
-    // Server setup
-    serverSetup(&server, &pwmServo);
+    // Motors setup
+    motors.begin();
 
-    // Controller setup
-    controllerSetup();
+    // Server setup
+    serverSetup(&server, &motors);
 
     Serial.println("Setup done");
 }
 
 void loop()
 {
-    int motors[] = { 0, 3, 7, 11, 15 };
-
     if (TEST_START)
     {
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 5; i++)
         {
-            pwmServo.setPWM(motors[i], 0, SERVO_M_ID);
-            Serial.println(pwmServo.getPWM(motors[i], true));
+            motors.setPos(i, SERVO_M_ID);
+            Serial.println(motors.getPos(i));
         }
 
         TEST_START = false;
