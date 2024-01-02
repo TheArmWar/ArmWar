@@ -1,5 +1,7 @@
 #include "motors.hpp"
 
+#include "../config.hpp"
+
 /**
  * Motors constructor
  * @param pins: List of pins for each motor. In the list, the first pin will
@@ -52,6 +54,42 @@ Motors::Status Motors::setPos(uint8_t n, uint16_t pos)
                                                          pos);
 }
 
+/**
+ * Set the position of the motor "n" with the position "pos"
+ * @param n: The nth motor of the pins list
+ * @param pos: The position that will be set to the nth motor
+ * @return Motors::Status
+ */
+Motors::Status Motors::setPosPlier(uint8_t n, uint16_t pos)
+{
+    if (pos < SERVO_PLIER_MIN)
+        pos = SERVO_PLIER_MIN;
+    else if (pos > SERVO_PLIER_MAX)
+        pos = SERVO_PLIER_MAX;
+
+    return (Motors::Status)this->pwm_servo_driver.setPWM(this->motor_pins[n], 0,
+                                                         pos);
+}
+
+/**
+ * Set the maximal position of the motor "n"
+ * @param n: The nth motor of the pins list
+ * @return Motors::Status
+ */
+Motors::Status Motors::setPosPlierMax(uint8_t n)
+{
+    return this->setPos(n, SERVO_PLIER_MAX);
+}
+
+/**
+ * Set the minimal position of the motor "n"
+ * @param n: The nth motor of the pins list
+ * @return Motors::Status
+ */
+Motors::Status Motors::setPosPlierMin(uint8_t n)
+{
+    return this->setPos(n, SERVO_PLIER_MIN);
+}
 /**
  * Set the maximal position of the motor "n"
  * @param n: The nth motor of the pins list
