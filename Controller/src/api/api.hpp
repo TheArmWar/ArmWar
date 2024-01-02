@@ -1,97 +1,95 @@
-#ifndef API_HPP
-#define API_HPP
-
-#include <Adafruit_PWMServoDriver.h>
+#pragma once
 
 #include "../server/armwar.pb.h"
+#include "motors.hpp"
 
-typedef int (*func)(Adafruit_PWMServoDriver&, int);
+typedef int (*func)(Motors&, int);
 typedef func (*pm)();
 
 /**
  * Rotate every motor to the middle position
- * @param pwm: the pwm object
+ * @param motors: the motors object
  * @return 0 if success, 1 if error
  */
-int basePos(Adafruit_PWMServoDriver& pwm);
+int basePos(Motors& motors);
 
 /**
  * Rotate the first motor by *nb_degree* degrees
- * @param pwm: the pwm object
+ * @param motors: the motors object
  * @param nb_degree: the number of degrees to rotate
  * @return 0 if success, 1 if error
  */
-int left(Adafruit_PWMServoDriver& pwm, int nb_degree);
+int left(Motors& motors, int nb_degree);
 
 /**
  * Rotate the first motor by *nb_degree* degrees
- * @param pwm: the pwm object
+ * @param motors: the motors object
  * @param nb_degree: the number of degrees to rotate
  * @return 0 if success, 1 if error
  */
-int right(Adafruit_PWMServoDriver& pwm, int nb_degree);
+int right(Motors& motors, int nb_degree);
 
 /**
  * Rotate the second motor by *nb_degree* degrees
- * @param pwm: the pwm object
+ * @param motors: the motors object
  * @param nb_degree: the number of degrees to rotate
  * @return 0 if success, 1 if error
  */
-int up(Adafruit_PWMServoDriver& pwm, int nb_degree);
+int up(Motors& motors, int nb_degree);
 
 /**
  * Rotate the second motor by - *nb_degree* degrees
- * @param pwm: the pwm object
+ * @param motors: the motors object
  * @param nb_degree: the number of degrees to rotate
  * @return 0 if success, 1 if error
  */
-int down(Adafruit_PWMServoDriver& pwm, int nb_degree);
+int down(Motors& motors, int nb_degree);
 
 /**
  * Move the arm forward
- * @param pwm: the pwm object
+ * @param motors: the motors object
  * @return 0 if success, 1 if error
  */
-int forward(Adafruit_PWMServoDriver& pwm, int nb_degree);
+int forward(Motors& motors, int nb_degree);
 
 /**
  * Move the arm backward
- * @param pwm: the pwm object
+ * @param motors: the motors object
  * @return 0 if success, 1 if error
  */
-int backward(Adafruit_PWMServoDriver& pwm, int nb_degree);
+int backward(Motors& motors, int nb_degree);
 
 /**
  * Rotate the fourth motor by *nb_degree* degrees
- * @param pwm: the pwm object
+ * @param motors: the motors object
  * @param nb_degree: the number of degrees to rotate
  * @return 0 if success, 1 if error
  */
-int rotate_cw(Adafruit_PWMServoDriver& pwm, int nb_degree);
+int rotate_cw(Motors& motors, int nb_degree);
 
 /**
  * Rotate the fourth motor by - *nb_degree* degrees
- * @param pwm: the pwm object
+ * @param motors: the motors object
  * @param nb_degree: the number of degrees to rotate
  * @return 0 if success, 1 if error
  */
-int rotate_ccw(Adafruit_PWMServoDriver& pwm, int nb_degree);
+int rotate_ccw(Motors& motors, int nb_degree);
 
 /**
  * Rotate the fifth motor by - *nb_degree* degrees
- * @param pwm: the pwm object
+ * @param motors: the motors object
  * @param nb_degree: the number of degrees to rotate
  * @return 0 if success, 1 if error
  */
-int grab(Adafruit_PWMServoDriver& pwm, int nb_degree);
+int grab(Motors& motors, int nb_degree);
 
 /**
  * Rotate the fifth motor by *nb_degree* degrees
- * @param pwm: the pwm object
+ * @param motors: the motors object
  * @param nb_degree: the number of degrees to rotate
  * @return 0 if success, 1 if error
  */
-int release(Adafruit_PWMServoDriver& pwm, int nb_degree);
+int release(Motors& motors, int nb_degree);
 
 /**
  * Parse a command and gets its function pointer
@@ -100,5 +98,3 @@ int release(Adafruit_PWMServoDriver& pwm, int nb_degree);
  * @return 0 if success, 1 if error, -1 if command not found
  */
 func parse_command(armwar_Command command);
-
-#endif /* API_HPP */

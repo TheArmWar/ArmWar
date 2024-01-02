@@ -5,16 +5,18 @@ Thread stated_thread;
 /**
  * Execute a command
  * @param func: the function pointer to the command to execute
- * @param pwm: the pwm object
+ * @param motors: the motors object
  * @param nb_degree: the number of degrees to rotate
-*/
-int exec_command(func fun, Adafruit_PWMServoDriver pwm, int nb_degree)
+ */
+int exec_command(func fun, Motors motors, int nb_degree)
 {
-    while (1) {
-        if (stated_thread.stop) {
+    while (1)
+    {
+        if (stated_thread.stop)
+        {
             return 0;
         }
-        if (fun(pwm, nb_degree) == 1)
+        if (fun(motors, nb_degree) == 1)
         {
             printf("Error while executing command\n");
             return 1;
@@ -22,7 +24,7 @@ int exec_command(func fun, Adafruit_PWMServoDriver pwm, int nb_degree)
     }
 }
 
-int command(armwar_StatedCommand command, Adafruit_PWMServoDriver pwm)
+int command(armwar_StatedCommand command, Motors motors)
 {
     func fun;
     if (parse_command(command.command) == NULL)
@@ -31,17 +33,19 @@ int command(armwar_StatedCommand command, Adafruit_PWMServoDriver pwm)
         return -1;
     }
 
-    if (command.start) {
+    if (command.start)
+    {
         stated_thread.SetName("test");
-        stated_thread.SetThread(std::thread(exec_command, fun, pwm, 1));
+        stated_thread.SetThread(std::thread(exec_command, fun, motors, 1));
     }
-    else {
+    else
+    {
         stated_thread.stop = true;
         stated_thread.t1.join();
     }
 }
 
-int command(armwar_SpannedCommand command, Adafruit_PWMServoDriver pwm)
+int command(armwar_SpannedCommand command, Motors motors)
 {
     func fun;
     if (parse_command(command.command) == NULL)
@@ -50,7 +54,7 @@ int command(armwar_SpannedCommand command, Adafruit_PWMServoDriver pwm)
         return -1;
     }
 
-    if (fun(pwm, command.span) == 1)
+    if (fun(motors, command.span) == 1)
     {
         printf("Error while executing command\n");
         return 1;
@@ -60,8 +64,8 @@ int command(armwar_SpannedCommand command, Adafruit_PWMServoDriver pwm)
 /**
  * Execute a command for a given duration
  * Parse the time and transform it in number of execution
-*/
-int command(armwar_TimedCommand command, Adafruit_PWMServoDriver pwm)
+ */
+int command(armwar_TimedCommand command, Motors motors)
 {
     Serial.println("Timed command");
     func fun;
@@ -75,7 +79,7 @@ int command(armwar_TimedCommand command, Adafruit_PWMServoDriver pwm)
     int nb_exec = command.duration * 5;
     for (int i = 0; i < nb_exec; i++)
     {
-        if (fun(pwm, nb_degree) == 1)
+        if (fun(motors, nb_degree) == 1)
         {
             printf("Error while executing command\n");
             return 1;
