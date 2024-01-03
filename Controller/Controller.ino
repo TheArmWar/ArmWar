@@ -10,11 +10,10 @@
 // Config
 #include "src/config.hpp"
 
-/* -------------------------------------------------------------------------- */
-// Wifi settings
-const char* SSID = "***REMOVED***";
-const char* PASSWORD = "***REMOVED***";
+// Wifi credentials
+#include "src/credentials.hpp"
 
+/* -------------------------------------------------------------------------- */
 // HTTP server global variable
 HTTPServer server = HTTPServer(SERVER_PORT);
 
@@ -37,7 +36,7 @@ void setup()
     Serial.begin(SERIAL_BAUDRATE);
 
     // Wifi setup
-    wifiConnect(SSID, PASSWORD);
+    wifiConnect(SECRET_SSID, SECRET_PASSWORD);
 
     // Motors setup
     motors.begin();
