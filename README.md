@@ -80,7 +80,9 @@ Then, you should add the generator-bin directory of the untar directory to your 
 
 ### Wifi Setup
 
-Don't forget to replace the network information in the source code with yours.
+To be able to connect to wifi with the arm, you must create a "credentials.hpp"
+file which contains your credentials. An example is provided, simply copy it and
+replace the values with yours.
 
 ### Documentation
 
