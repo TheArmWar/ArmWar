@@ -9,11 +9,11 @@
   },
   "dependencies": {
     "protobufjs": "^7.2.5",
-    "vue": "^3.3.4",
+    "vue": "^3.4.3",
     "vue-toast-notification": "^3.1.2"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^4.3.1",
-    "vite": "^4.4.9"
+    "@vitejs/plugin-vue": "^5.0.2",
+    "vite": "^5.0.10"
   }
 }
