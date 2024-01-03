@@ -41,6 +41,3 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-
-# Controller Credentials
-credentials.hpp
