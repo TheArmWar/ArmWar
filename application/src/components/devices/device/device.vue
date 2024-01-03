@@ -1,10 +1,11 @@
 <script setup>
 import { ref } from "vue";
 import { getCurrentInstance } from "vue";
-const { emit } = getCurrentInstance();
+
 import robot_arm_icon from "@/assets/robot_arm_icon.png";
 import erase_icon from "@/assets/erase_icon.png";
 
+const { emit } = getCurrentInstance();
 defineProps(["name", "connected", "id"]);
 </script>
 

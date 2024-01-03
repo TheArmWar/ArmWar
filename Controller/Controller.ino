@@ -1,11 +1,5 @@
 // Wifi
-#include <WiFi.h>
-
-// PWM ServoDriver
-#include <Adafruit_PWMServoDriver.h>
-
-// Wire
-#include <Wire.h>
+#include "src/utils/wifi.hpp"
 
 // HTTP Server
 #include "src/server/server.hpp"
@@ -13,71 +7,52 @@
 // API
 #include "src/api/api.hpp"
 
-// Wifi settings
-const char *SSID = "Bbox-26C04E63";
-const char *PASSWORD = "64jWvZjh7fPj145UQf";
+// Config
+#include "src/config.hpp"
 
-// Protobuf buffers size
-const int BUFFER_SIZE = 512;
+// Wifi credentials
+#include "src/credentials.hpp"
 
+/* -------------------------------------------------------------------------- */
 // HTTP server global variable
-HTTPServer server = HTTPServer(80);
+HTTPServer server = HTTPServer(SERVER_PORT);
 
-int FREQ = 50;
-int sens = 1;
-
-// PWM ServoDriver
-Adafruit_PWMServoDriver pwmServo = Adafruit_PWMServoDriver();
+// Motors api global variable
+Motors motors = Motors({ 0, 3, 7, 11, 15 });
 
 /**
- * wifiConnect function
- * ssid Name of the network
- * password Password of the network
+ * Motors:
+ * 0: Arm rotation
+ * 1: Down Vertical Axis
+ * 2: Upper Vertical Axis
+ * 3: Pliers rotation
+ * 4: Pliers
  */
-void wifiConnect(const char *ssid, const char *password) {
-  Serial.print("Connecting to ");
-  Serial.println(SSID);
 
-  // Begins a connection
-  WiFi.begin(SSID, PASSWORD);
+/* -------------------------------------------------------------------------- */
+void setup()
+{
+    // Serial setup
+    Serial.begin(SERIAL_BAUDRATE);
 
-  // Wait until we are connected
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
+    // Wifi setup
+    wifiConnect(SECRET_SSID, SECRET_PASSWORD);
 
-  Serial.println("");
-  Serial.println("WiFi connected.");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
+    // Motors setup
+    motors.begin();
+
+    // Server setup
+    serverSetup(&server, &motors);
+
+    // Init motors to base bos
+    basePos(motors);
+
+    motors.setPosPlierMin(4);
+    Serial.println("Setup done");
 }
 
-void controllerSetup() {
-  pwmServo.begin();
-  pwmServo.setOscillatorFrequency(27000000);
-  pwmServo.setPWMFreq(FREQ);
-}
-
-void setup() {
-  // Serial setup
-  Serial.begin(115200);
-
-  // Wifi setup
-  wifiConnect(SSID, PASSWORD);
-
-  // Server setup
-  serverSetup(&server, &pwmServo);
-
-  // Controller setup
-  controllerSetup();
-
-  Serial.println("Setup done");
-}
-
-void loop() {
-  // Echo server listening
-  server.loop();
-
-  // Serial.println("Loop");
+/* -------------------------------------------------------------------------- */
+void loop()
+{
+    server.loop();
 }

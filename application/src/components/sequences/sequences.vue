@@ -16,6 +16,10 @@ const handleDeleteSequence = (sequenceId) => {
 const handlePlaySequence = (sequenceId) => {
   emit("play-sequence", sequenceId);
 };
+
+const deleteSequence = () => {
+  emit("delete-sequence");
+};
 </script>
 
 <template>
@@ -74,6 +78,12 @@ const handlePlaySequence = (sequenceId) => {
 
 .button:hover {
   background-color: var(--faded-orange);
+}
+
+.delete {
+  background-color: red;
+  margin-top: -5px;
+  width: 144px;
 }
 
 h1 {
