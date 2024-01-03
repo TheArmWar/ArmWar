@@ -47,8 +47,8 @@ void setup()
     // Init motors to base bos
     basePos(motors);
 
-    motors.setPosPlierMin(4);
-    Serial.println("Setup done");
+    // motors.setPosPlierMin(4);
+-    Serial.println("Setup done");
 }
 
 /* -------------------------------------------------------------------------- */
