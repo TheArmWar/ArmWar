@@ -8,7 +8,7 @@
 #include <string>
 
 #include "../api/command.hpp"
-#include "../config.hpp"
+#include "../config/config.hpp"
 #include "armwar.pb.h"
 
 // Enhance code readability
