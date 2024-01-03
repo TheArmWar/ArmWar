@@ -1,6 +1,6 @@
 #include "motors.hpp"
 
-#include "../config.hpp"
+#include "../config/config.hpp"
 
 /**
  * Motors constructor

@@ -8,10 +8,10 @@
 #include "src/api/api.hpp"
 
 // Config
-#include "src/config.hpp"
+#include "src/config/config.hpp"
 
 // Wifi credentials
-#include "src/credentials.hpp"
+#include "src/config/credentials.hpp"
 
 /* -------------------------------------------------------------------------- */
 // HTTP server global variable

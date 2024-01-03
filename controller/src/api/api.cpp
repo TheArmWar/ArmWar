@@ -1,6 +1,6 @@
 #include "api.hpp"
 
-#include "../config.hpp"
+#include "../config/config.hpp"
 /**
  * Motors:
  * 0: Arm rotation
