@@ -1,27 +1,8 @@
 #include "command.hpp"
 
+#include <thread>
+
 #include "../config/config.hpp"
-
-Thread stated_thread;
-
-/**
- * Execute a command
- * @param func: the function pointer to the command to execute
- * @param motors: the motors object
- * @param nb_degree: the number of degrees to rotate
- */
-int exec_command(func fun, Motors motors, int nb_degree)
-{
-    while (1)
-    {
-        if (stated_thread.stop)
-            return 0;
-
-        if (fun(motors, nb_degree) == 1)
-            return 1;
-        delay(SERVO_SPEED);
-    }
-}
 
 /**
  * Parse a Stated command and execute it
@@ -33,6 +14,10 @@ int exec_command(func fun, Motors motors, int nb_degree)
  */
 int command(armwar_StatedCommand command, Motors motors)
 {
+    // static Thread* thread = nullptr;
+    static bool stop = false;
+    static std::thread thread;
+
     func fun = parse_command(command.command);
 
     if (fun == NULL)
@@ -40,15 +25,20 @@ int command(armwar_StatedCommand command, Motors motors)
 
     if (command.start)
     {
-        stated_thread.stop = false;
-        stated_thread.SetName("StatedThread");
-        stated_thread.SetThread(std::thread(exec_command, fun, motors, 1));
+        stop = false;
+        thread = std::thread([command, motors, fun, &stop]() mutable {
+            while (!stop)
+            {
+                fun(motors, 1);
+                delay(SERVO_SPEED);
+            }
+        });
     }
 
     else
     {
-        stated_thread.stop = true;
-        stated_thread.t1.join();
+        stop = true;
+        thread.join();
     }
 
     return 0;
@@ -81,19 +71,24 @@ int command(armwar_SpannedCommand command, Motors motors)
 int command(armwar_TimedCommand command, Motors motors)
 {
     func fun = parse_command(command.command);
-    // int nb_exec = command.duration * 10;
-    int nb_exec = 1;
     int nb_degree = 1;
 
     if (fun == NULL)
         return -1;
 
-    for (int i = 0; i < nb_exec; i++)
-    {
-        if (fun(motors, nb_degree) == 1)
+    std::thread([command, motors, fun]() mutable {
+        int start = millis();
+        int current = millis();
+
+        while (current - start < command.duration)
         {
-            return 1;
+            fun(motors, 1);
+
+            delay(SERVO_SPEED);
+
+            current = millis();
         }
-    }
+    }).detach();
+
     return 0;
 }
