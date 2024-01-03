@@ -16,6 +16,7 @@ import {
   CommandType,
 } from "./scripts/protocol/protocol.js";
 
+/*----------------------------------------------------------------------------*/
 const timeout_ms = 3000;
 
 var protocol = null;
@@ -32,26 +33,26 @@ const selectedMode = ref("press");
 const timerValue = ref(1000);
 const toast = ref("");
 
-const handleCommandPressed = async (buttonName, image) => {
-  if (isRecording.value || selectedMode.value != "press") {
-    return;
+/*----------------------------------------------------------------------------*/
+function isDeviceSelected(currentDevice) {
+  if (currentDevice == null || currentDevice == "") {
+    toast.value.display(ToastType.Error, "No device selected");
+    return false;
   }
 
+  return true;
+}
+
+async function processCommand(payload) {
+  // Encode the payload
+  const encodedPayload = protocol.encode(MessageType.ArmCommand, payload);
+
+  console.log("Sent payload: ");
+  console.log(payload);
+  console.log(encodedPayload);
+
+  // Sends the requests and wait for the response
   try {
-    if (currentDevice.value == null || currentDevice.value == "") {
-      toast.value.display(ToastType.Error, "No device selected");
-      return;
-    }
-
-    // Build a payload matching a start stated command
-    const payload = protocol.buildStatedCommand(buttonName, true);
-    const encodedPayload = protocol.encode(MessageType.ArmCommand, payload);
-
-    console.log("Sent payload: ");
-    console.log(payload);
-    console.log(encodedPayload);
-
-    // Sends the requests and wait for the response
     const response = await fetch(`http://${currentDevice.value.ip}/command`, {
       method: "POST",
       body: encodedPayload,
@@ -76,55 +77,43 @@ const handleCommandPressed = async (buttonName, image) => {
   } catch (error) {
     toast.value.display(ToastType.Error, error.message);
   }
+}
+
+/*----------------------------------------------------------------------------*/
+const handleCommandPressed = async (buttonName, image) => {
+  // If we are recording, this handler should do nothing
+  // If the mode is not "press" then it should do nothing too
+  if (isRecording.value || selectedMode.value != "press") {
+    return;
+  }
+
+  if (!isDeviceSelected(currentDevice.value)) return;
+
+  // Build a payload matching a start stated command
+  const payload = protocol.buildStatedCommand(buttonName, true);
+
+  // Send the command and wait the response
+  processCommand(payload);
 };
 
 const handleCommandReleased = async (buttonName, image) => {
+  // Recording
   if (isRecording.value) {
     currentSequence.value.push(image);
-  } else {
-    try {
-      if (currentDevice.value == null || currentDevice.value == "") {
-        toast.value.display(ToastType.Error, "No device selected");
-        return;
-      }
+  }
 
-      // Build a payload matching the buttonName command
-      const payload =
-        selectedMode.value == "press"
-          ? protocol.buildStatedCommand(buttonName, false)
-          : protocol.buildTimedCommand(buttonName, timerValue.value);
+  // Playing
+  else {
+    if (!isDeviceSelected(currentDevice.value)) return;
 
-      const encodedPayload = protocol.encode(MessageType.ArmCommand, payload);
+    // Build a payload based on the selected mode
+    const payload =
+      selectedMode.value == "press"
+        ? protocol.buildStatedCommand(buttonName, false) // Press mode
+        : protocol.buildTimedCommand(buttonName, timerValue.value); // Timed mode
 
-      console.log("Sent payload: ");
-      console.log(payload);
-      console.log(encodedPayload);
-
-      // Sends the requests and wait for the response
-      const response = await fetch(`http://${currentDevice.value.ip}/command`, {
-        method: "POST",
-        body: encodedPayload,
-        signal: AbortSignal.timeout(timeout_ms),
-      });
-
-      // Gets the response body
-      const encodedText = await response.text();
-
-      // Decode the response
-      const responseObj = protocol.decode(
-        MessageType.CommandResponse,
-        encodedText,
-      );
-
-      console.log("Got payload: ");
-      console.log(responseObj);
-
-      if (responseObj.success)
-        toast.value.display(ToastType.Success, "Command success");
-      else toast.value.display(ToastType.Error, "Command failed");
-    } catch (error) {
-      toast.value.display(ToastType.Error, error.message);
-    }
+    // Send the command and wait the response
+    processCommand(payload);
   }
 };
 
@@ -283,6 +272,7 @@ const handleTimerChanged = (value) => {
   }
 };
 
+/*----------------------------------------------------------------------------*/
 onMounted(async () => {
   protocol = await Protocol.load("armwar.proto");
   toast.value = new Toaster();
@@ -295,6 +285,7 @@ onMounted(async () => {
 });
 </script>
 
+<!----------------------------------------------------------------------------->
 <template>
   <div class="container">
     <div class="main-container">
@@ -326,6 +317,7 @@ onMounted(async () => {
   </div>
 </template>
 
+<!----------------------------------------------------------------------------->
 <style scoped>
 @font-face {
   font-family: KronaOne;
