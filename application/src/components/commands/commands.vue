@@ -21,8 +21,12 @@ const { emit } = getCurrentInstance();
 
 const { selectedMode } = defineProps(["selectedMode", "timerValue"]);
 
-const handleButtonClick = (buttonName, image) => {
-  emit("button-clicked-parent", buttonName, image);
+const handleButtonMousedown = (buttonName, image) => {
+  emit("button-mousedown", buttonName, image);
+};
+
+const handleButtonMouseup = (buttonName, image) => {
+  emit("button-mouseup", buttonName, image);
 };
 
 const handleModeClicked = (mode) => {
@@ -40,65 +44,77 @@ const handleTimerChanged = (value) => {
     <div class="button-holder">
       <Button
         :image="release_icon"
-        @button-clicked="handleButtonClick"
+        @button-mousedown="handleButtonMousedown"
+        @button-mouseup="handleButtonMouseup"
         buttonName="release"
       />
       <Button
         :image="up_icon"
-        @button-clicked="handleButtonClick"
+        @button-mousedown="handleButtonMousedown"
+        @button-mouseup="handleButtonMouseup"
         buttonName="up"
       />
       <Button
         :image="press_icon"
-        @button-clicked="handleButtonClick"
+        @button-mousedown="handleButtonMousedown"
+        @button-mouseup="handleButtonMouseup"
         buttonName="press"
       />
 
       <Button
         :image="rotate_ccw_icon"
-        @button-clicked="handleButtonClick"
+        @button-mousedown="handleButtonMousedown"
+        @button-mouseup="handleButtonMouseup"
         buttonName="rotate_ccw"
       />
       <Button
         :image="forward_icon"
-        @button-clicked="handleButtonClick"
+        @button-mousedown="handleButtonMousedown"
+        @button-mouseup="handleButtonMouseup"
         buttonName="forward"
       />
       <Button
         :image="rotate_cw_icon"
-        @button-clicked="handleButtonClick"
+        @button-mousedown="handleButtonMousedown"
+        @button-mouseup="handleButtonMouseup"
         buttonName="rotate_cw"
       />
 
       <Button
         :image="left_icon"
-        @button-clicked="handleButtonClick"
+        @button-mousedown="handleButtonMousedown"
+        @button-mouseup="handleButtonMouseup"
         buttonName="left"
       />
       <Button
         :image="backward_icon"
-        @button-clicked="handleButtonClick"
+        @button-mousedown="handleButtonMousedown"
+        @button-mouseup="handleButtonMouseup"
         buttonName="backward"
       />
       <Button
         :image="right_icon"
-        @button-clicked="handleButtonClick"
+        @button-mousedown="handleButtonMousedown"
+        @button-mouseup="handleButtonMouseup"
         buttonName="right"
       />
 
       <Button
         :image="set_default_icon"
-        @button-clicked="handleButtonClick"
+        @button-mousedown="handleButtonMousedown"
+        @button-mouseup="handleButtonMouseup"
         buttonName="set-zero"
       />
       <Button
         :image="down_icon"
-        @button-clicked="handleButtonClick"
+        @button-mousedown="handleButtonMousedown"
+        @button-mouseup="handleButtonMouseup"
         buttonName="down"
       />
       <Button
         :image="reset_icon"
-        @button-clicked="handleButtonClick"
+        @button-mousedown="handleButtonMousedown"
+        @button-mouseup="handleButtonMouseup"
         buttonName="reset"
       />
 
@@ -106,7 +122,8 @@ const handleTimerChanged = (value) => {
         <Button
           other="true"
           :image="stop_icon"
-          @button-clicked="handleButtonClick"
+          @button-mousedown="handleButtonMousedown"
+          @button-mouseup="handleButtonMouseup"
           buttonName="stop"
         />
       </div>

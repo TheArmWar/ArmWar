@@ -108,13 +108,12 @@ export class Protocol {
 
   /**
    * @method
-   * Build a javascript object with protobuff based on the askes
-   * command.
-   * @param {String} commandName name of the command
-   * @returns {Object} javascript object matching the command name
+   * Return the commandType associated to the given string commandName
+   * @param {string} commandName
+   * @throws {Error} when commandName doesn't match a commandType
+   * @returns {CommandType}
    */
-  buildCommand(commandName) {
-    /* Select the command */
+  strToCommand(commandName) {
     var command = null;
 
     switch (commandName) {
@@ -165,17 +164,59 @@ export class Protocol {
       case "reset":
         command = CommandType.Reset;
         break;
+
+      default:
+        throw new Error("Command " + commandName + " doesn't exist");
     }
+
+    return command;
+  }
+
+  /**
+   * @method
+   * Build a javascript object matching a TimedCommand with protobuff based on the asked command and duration.
+   * @param {String} commandName name of the command
+   * @param {Number} duration Duration of the timed command
+   * @returns {Object} javascript object matching a TimedCommand
+   */
+  buildTimedCommand(commandName, duration) {
+    /* Select the command */
+    var command = this.strToCommand(commandName);
 
     /* Build the payload object. The message sent is always an ArmCommand which wraps a traditional command. */
     const message = this.getMessage(MessageType.ArmCommand);
 
     /* Build the payload of ArmCommand with a TimedCommand */
-    // TODO: Manage different commands (Sequence, span, ect)
     var payload = message.create({
       timedCommand: {
         command: command,
-        duration: 2,
+        duration: duration,
+      },
+    });
+
+    return payload;
+  }
+
+  /**
+   * @method
+   * Build a javascript object matching a StatedCommand with protobuff based on
+   * the asked command and state.
+   * @param {String} commandName name of the command
+   * @param {Boolean} start command start
+   * @returns {Object} javascript object matching a StatedCommand
+   */
+  buildStatedCommand(commandName, start) {
+    /* Select the command */
+    var command = this.strToCommand(commandName);
+
+    /* Build the payload object. The message sent is always an ArmCommand which wraps a traditional command. */
+    const message = this.getMessage(MessageType.ArmCommand);
+
+    /* Build the payload of ArmCommand with a TimedCommand */
+    var payload = message.create({
+      statedCommand: {
+        command: command,
+        start: start,
       },
     });
 

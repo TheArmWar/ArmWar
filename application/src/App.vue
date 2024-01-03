@@ -32,7 +32,53 @@ const selectedMode = ref("press");
 const timerValue = ref(1000);
 const toast = ref("");
 
-const handleClickParent = async (buttonName, image) => {
+const handleCommandPressed = async (buttonName, image) => {
+  if (isRecording.value || selectedMode.value != "press") {
+    return;
+  }
+
+  try {
+    if (currentDevice.value == null || currentDevice.value == "") {
+      toast.value.display(ToastType.Error, "No device selected");
+      return;
+    }
+
+    // Build a payload matching a start stated command
+    const payload = protocol.buildStatedCommand(buttonName, true);
+    const encodedPayload = protocol.encode(MessageType.ArmCommand, payload);
+
+    console.log("Sent payload: ");
+    console.log(payload);
+    console.log(encodedPayload);
+
+    // Sends the requests and wait for the response
+    const response = await fetch(`http://${currentDevice.value.ip}/command`, {
+      method: "POST",
+      body: encodedPayload,
+      signal: AbortSignal.timeout(timeout_ms),
+    });
+
+    // Gets the response body
+    const encodedText = await response.text();
+
+    // Decode the response
+    const responseObj = protocol.decode(
+      MessageType.CommandResponse,
+      encodedText,
+    );
+
+    console.log("Got payload: ");
+    console.log(responseObj);
+
+    if (responseObj.success)
+      toast.value.display(ToastType.Success, "Command success");
+    else toast.value.display(ToastType.Error, "Command failed");
+  } catch (error) {
+    toast.value.display(ToastType.Error, error.message);
+  }
+};
+
+const handleCommandReleased = async (buttonName, image) => {
   if (isRecording.value) {
     currentSequence.value.push(image);
   } else {
@@ -43,7 +89,10 @@ const handleClickParent = async (buttonName, image) => {
       }
 
       // Build a payload matching the buttonName command
-      const payload = protocol.buildCommand(buttonName);
+      const payload =
+        selectedMode.value == "press"
+          ? protocol.buildStatedCommand(buttonName, false)
+          : protocol.buildTimedCommand(buttonName, timerValue.value);
 
       const encodedPayload = protocol.encode(MessageType.ArmCommand, payload);
 
@@ -260,7 +309,8 @@ onMounted(async () => {
         <Commands
           :selectedMode="selectedMode"
           :timerValue="timerValue"
-          @button-clicked-parent="handleClickParent"
+          @button-mousedown="handleCommandPressed"
+          @button-mouseup="handleCommandReleased"
           @mode-clicked="handleModeSwitch"
           @timer-changed="handleTimerChanged"
         />

@@ -36,3 +36,5 @@
 #define SERVO_INTERVALLE 2000 // 2 seconds
 
 #define SERVO_UNIT 1 // 2 unit ~= 1 degree
+
+#define SERVO_SPEED 20 // Delay between each command in milliseconds
