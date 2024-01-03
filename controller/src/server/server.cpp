@@ -177,7 +177,12 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
         // TODO: need api Spanned sequence handler
         break;
     case armwar_ArmCommand_stated_command_tag:
-        Serial.println("Received Stated command");
+        Serial.print("Received Stated command: ");
+        if (cmd.command.stated_command.start)
+            Serial.println("Start");
+        else
+            Serial.println("Stop");
+
         command(cmd.command.stated_command, *g_motors);
         break;
     default:

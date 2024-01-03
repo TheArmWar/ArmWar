@@ -1,5 +1,7 @@
 #include "command.hpp"
 
+#include "../config/config.hpp"
+
 Thread stated_thread;
 
 /**
@@ -13,13 +15,11 @@ int exec_command(func fun, Motors motors, int nb_degree)
     while (1)
     {
         if (stated_thread.stop)
-        {
             return 0;
-        }
+
         if (fun(motors, nb_degree) == 1)
-        {
             return 1;
-        }
+        delay(SERVO_SPEED);
     }
 }
 
@@ -35,11 +35,12 @@ int command(armwar_StatedCommand command, Motors motors)
 {
     func fun = parse_command(command.command);
 
-    if (fun(motors, command.command) == NULL)
+    if (fun == NULL)
         return -1;
 
     if (command.start)
     {
+        stated_thread.stop = false;
         stated_thread.SetName("StatedThread");
         stated_thread.SetThread(std::thread(exec_command, fun, motors, 1));
     }

@@ -9,8 +9,12 @@ const { image, buttonName, other } = defineProps([
   "other",
 ]);
 
-const handleClick = () => {
-  emit("button-clicked", buttonName, image);
+const handleMousedown = () => {
+  emit("button-mousedown", buttonName, image);
+};
+
+const handleMouseup = () => {
+  emit("button-mouseup", buttonName, image);
 };
 </script>
 
@@ -19,7 +23,8 @@ const handleClick = () => {
     <button
       class="button"
       :class="other ? 'other-button' : ''"
-      @click="handleClick"
+      @mousedown="handleMousedown"
+      @mouseup="handleMouseup"
     >
       <img :src="image" alt="arrow" />
     </button>
