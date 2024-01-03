@@ -8,7 +8,7 @@
 void wifiConnect(const char* ssid, const char* password)
 {
     Serial.print("Connecting to ");
-    Serial.println(ssid);
+    Serial.print(ssid);
 
     // Begins a connection
     WiFi.begin(ssid, password);
@@ -22,6 +22,6 @@ void wifiConnect(const char* ssid, const char* password)
 
     Serial.println("");
     Serial.println("WiFi connected.");
-    Serial.println("IP address: ");
+    Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
 }
