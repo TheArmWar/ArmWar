@@ -25,15 +25,15 @@ function handleModeClicked(mode) {
     >
       <img :src="press_mode_icon" />
     </button>
-    <p
-      :style="
-        selectedMode == 'timer'
-          ? { visibilty: 'visible' }
-          : { visibility: 'hidden' }
-      "
-    >
+    <!--
+    <p :style="selectedMode == 'timer'
+        ? { visibilty: 'visible' }
+        : { visibility: 'hidden' }
+      ">
       {{ timerValue }} ms
     </p>
+    -->
+    <p>{{ timerValue }} ms</p>
     <button
       class="timer_btn"
       :class="{ selected: selectedMode == 'timer' }"
@@ -50,7 +50,6 @@ function handleModeClicked(mode) {
 }
 
 .container {
-  visibility:;
   display: flex;
   justify-content: space-around;
   align-items: center;

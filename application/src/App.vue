@@ -25,12 +25,16 @@ const allSequences = ref([]);
 const allDevices = ref([]);
 
 const currentDevice = ref("");
+
 const isRecording = ref(false);
+const recordingTimerRefMs = ref(0);
+const recordingTimerHandler = ref(0);
 const currentSequence = ref([]);
 const currentSequenceName = ref("");
 
 const selectedMode = ref("press");
 const timerValue = ref(1000);
+
 const toast = ref("");
 
 /*----------------------------------------------------------------------------*/
@@ -79,27 +83,41 @@ async function processCommand(payload) {
   }
 }
 
+function handleRecordingTimer() {
+  timerValue.value = Date.now() - recordingTimerRefMs.value;
+}
+
 /*----------------------------------------------------------------------------*/
 const handleCommandPressed = async (buttonName, image) => {
-  // If we are recording, this handler should do nothing
   // If the mode is not "press" then it should do nothing too
-  if (isRecording.value || selectedMode.value != "press") {
+  if (selectedMode.value != "press") {
     return;
   }
 
-  if (!isDeviceSelected(currentDevice.value)) return;
+  recordingTimerRefMs.value = Date.now();
+  recordingTimerHandler.value = window.setInterval(handleRecordingTimer, 1);
 
-  // Build a payload matching a start stated command
-  const payload = protocol.buildStatedCommand(buttonName, true);
+  // Playing
+  if (!isRecording.value) {
+    if (!isDeviceSelected(currentDevice.value)) return;
 
-  // Send the command and wait the response
-  processCommand(payload);
+    // Build a payload matching a start stated command
+    const payload = protocol.buildStatedCommand(buttonName, true);
+
+    // Send the command and wait the response
+    processCommand(payload);
+  }
 };
 
 const handleCommandReleased = async (buttonName, image) => {
+  if (selectedMode.value == "press") {
+    window.clearInterval(recordingTimerHandler.value);
+    timerValue.value = Date.now() - recordingTimerRefMs.value;
+  }
+
   // Recording
   if (isRecording.value) {
-    currentSequence.value.push(image);
+    currentSequence.value.push({ image: image, duration: timerValue.value });
   }
 
   // Playing
@@ -148,7 +166,7 @@ const handleNewSequence = () => {
     console.log("final sequence", currentSequence.value);
     allSequences.value.push({
       name: currentSequenceName.value,
-      movements: currentSequence.value,
+      items: currentSequence.value,
       id: Date.now(),
     });
   }
@@ -370,6 +388,7 @@ onMounted(async () => {
   --large: 50px;
   --medium: 25px;
   --small: 15px;
+  --very-small: 12px;
 
   font-family: "KronaOne", sans-serif;
 }

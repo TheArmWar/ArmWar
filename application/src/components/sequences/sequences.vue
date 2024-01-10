@@ -16,10 +16,6 @@ const handleDeleteSequence = (sequenceId) => {
 const handlePlaySequence = (sequenceId) => {
   emit("play-sequence", sequenceId);
 };
-
-const deleteSequence = () => {
-  emit("delete-sequence");
-};
 </script>
 
 <template>
@@ -29,7 +25,7 @@ const deleteSequence = () => {
       <Sequence
         v-for="sequence in allSequences"
         :sequenceName="sequence.name"
-        :movements="sequence.movements"
+        :items="sequence.items"
         :id="sequence.id"
         @delete-sequence="handleDeleteSequence"
         @play-sequence="handlePlaySequence"
