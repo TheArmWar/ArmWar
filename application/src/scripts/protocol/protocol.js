@@ -1,7 +1,12 @@
 /* Imports */
-import { load } from "protobufjs";
 import { armwar } from "./armwar.js";
 
+/**
+ * @function buildTimedCommand
+ * @param {armwar.Command} command
+ * @param {int} duration duration in ms
+ * @returns armwar.ArmCommand
+ */
 export function buildTimedCommand(command, duration) {
   const timedCommand = armwar.TimedCommand.create({
     command: command,
@@ -15,6 +20,12 @@ export function buildTimedCommand(command, duration) {
   return armCommand;
 }
 
+/**
+ * @function buildStatedCommand
+ * @param {armwar.Command} command
+ * @param {uint8_t} start (0 = stop) (1 = start)
+ * @returns armwar.ArmCommand
+ */
 export function buildStatedCommand(command, start) {
   const statedCommand = armwar.StatedCommand.create({
     command: command,
@@ -28,14 +39,20 @@ export function buildStatedCommand(command, start) {
   return armCommand;
 }
 
+/**
+ * @function encodeCommand
+ * @param {armwar.ArmCommand} payload (containing a statedCommand or a TimedCommand)
+ * @returns byte array
+ */
 export function encodeCommand(payload) {
   return armwar.ArmCommand.encode(payload).finish();
 }
 
+/**
+ * @function decodeResponse
+ * @param {Uint8Array} payload Encoded Command Response to decode
+ * @returns armwar.CommandResponse
+ */
 export function decodeResponse(payload) {
   return armwar.CommandResponse.decode(payload);
-}
-
-function encodeSequence(payload) {
-  return;
 }
