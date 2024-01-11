@@ -3,18 +3,14 @@ import { defineProps, getCurrentInstance } from "vue";
 
 const { emit } = getCurrentInstance();
 
-const { image, buttonName, other } = defineProps([
-  "image",
-  "buttonName",
-  "other",
-]);
+const { image, command, other } = defineProps(["image", "command", "other"]);
 
 const handleMousedown = () => {
-  emit("button-mousedown", buttonName, image);
+  emit("button-mousedown", command, image);
 };
 
 const handleMouseup = () => {
-  emit("button-mouseup", buttonName, image);
+  emit("button-mouseup", command, image);
 };
 </script>
 

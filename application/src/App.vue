@@ -1,19 +1,18 @@
 <script setup>
 // Imports ref
 import { onMounted, ref } from "vue";
-
 import Header from "./components/header/header.vue";
 import Devices from "./components/devices/devices.vue";
 import Commands from "./components/commands/commands.vue";
 import Sequences from "./components/sequences/sequences.vue";
-
 import { Toaster, ToastType } from "./scripts/toaster/toaster.js";
 
 // Imports protocol
 import {
-  Protocol,
-  MessageType,
-  CommandType,
+  buildTimedCommand,
+  buildStatedCommand,
+  encodeCommand,
+  decodeResponse,
 } from "./scripts/protocol/protocol.js";
 
 /*----------------------------------------------------------------------------*/
@@ -49,11 +48,7 @@ function isDeviceSelected(currentDevice) {
 
 async function processCommand(payload) {
   // Encode the payload
-  const encodedPayload = protocol.encode(MessageType.ArmCommand, payload);
-
-  console.log("Sent payload: ");
-  console.log(payload);
-  console.log(encodedPayload);
+  const encodedPayload = encodeCommand(payload);
 
   // Sends the requests and wait for the response
   try {
@@ -64,13 +59,10 @@ async function processCommand(payload) {
     });
 
     // Gets the response body
-    const encodedText = await response.text();
+    const encodedText = new TextEncoder().encode(await response.text());
 
     // Decode the response
-    const responseObj = protocol.decode(
-      MessageType.CommandResponse,
-      encodedText,
-    );
+    const responseObj = decodeResponse(encodedText);
 
     console.log("Got payload: ");
     console.log(responseObj);
@@ -88,7 +80,13 @@ function handleRecordingTimer() {
 }
 
 /*----------------------------------------------------------------------------*/
-const handleCommandPressed = async (buttonName, image) => {
+const handleSequencePlay = (sequenceId) => {
+  let sequence = allSequences.find((sequence) => sequence.id == sequenceId);
+
+  const payload = protocol.build;
+};
+
+const handleCommandPressed = (command, image) => {
   // If the mode is not "press" then it should do nothing too
   if (selectedMode.value != "press") {
     return;
@@ -102,14 +100,14 @@ const handleCommandPressed = async (buttonName, image) => {
     if (!isDeviceSelected(currentDevice.value)) return;
 
     // Build a payload matching a start stated command
-    const payload = protocol.buildStatedCommand(buttonName, true);
+    const payload = buildStatedCommand(command, true);
 
     // Send the command and wait the response
     processCommand(payload);
   }
 };
 
-const handleCommandReleased = async (buttonName, image) => {
+const handleCommandReleased = (command, image) => {
   if (selectedMode.value == "press") {
     window.clearInterval(recordingTimerHandler.value);
     timerValue.value = Date.now() - recordingTimerRefMs.value;
@@ -127,8 +125,8 @@ const handleCommandReleased = async (buttonName, image) => {
     // Build a payload based on the selected mode
     const payload =
       selectedMode.value == "press"
-        ? protocol.buildStatedCommand(buttonName, false) // Press mode
-        : protocol.buildTimedCommand(buttonName, timerValue.value); // Timed mode
+        ? buildStatedCommand(command, false) // Press mode
+        : buildTimedCommand(command, timerValue.value); // Timed mode
 
     // Send the command and wait the response
     processCommand(payload);
@@ -245,13 +243,6 @@ const handleDeleteSequence = (sequenceId) => {
   }
 };
 
-const handlePlaySequence = async (sequenceName) => {
-  const sequence = allSequences.value.find(
-    (sequence) => sequence.name == sequenceName,
-  );
-  console.log("playing sequence", sequence);
-};
-
 const handleDeleteDevice = (deviceId) => {
   const found = allDevices.value.find((device) => device.id == deviceId);
 
@@ -292,7 +283,6 @@ const handleTimerChanged = (value) => {
 
 /*----------------------------------------------------------------------------*/
 onMounted(async () => {
-  protocol = await Protocol.load("armwar.proto");
   toast.value = new Toaster();
 
   // Force dismiss specific toast

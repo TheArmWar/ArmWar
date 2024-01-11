@@ -14,19 +14,19 @@ import right_icon from "@/assets/right_icon.png";
 import set_default_icon from "@/assets/set_default_icon.png";
 import stop_icon from "@/assets/stop_icon.png";
 import reset_icon from "@/assets/reset_icon.png";
-
+import { armwar } from "./../../scripts/protocol/armwar.js";
 import { ref } from "vue";
 import { getCurrentInstance } from "vue";
 const { emit } = getCurrentInstance();
 
 const { selectedMode } = defineProps(["selectedMode", "timerValue"]);
 
-const handleButtonMousedown = (buttonName, image) => {
-  emit("button-mousedown", buttonName, image);
+const handleButtonMousedown = (command, image) => {
+  emit("button-mousedown", command, image);
 };
 
-const handleButtonMouseup = (buttonName, image) => {
-  emit("button-mouseup", buttonName, image);
+const handleButtonMouseup = (command, image) => {
+  emit("button-mouseup", command, image);
 };
 
 const handleModeClicked = (mode) => {
@@ -46,76 +46,76 @@ const handleTimerChanged = (value) => {
         :image="release_icon"
         @button-mousedown="handleButtonMousedown"
         @button-mouseup="handleButtonMouseup"
-        buttonName="release"
+        :command="armwar.Command.RELEASE"
       />
       <Button
         :image="up_icon"
         @button-mousedown="handleButtonMousedown"
         @button-mouseup="handleButtonMouseup"
-        buttonName="up"
+        :command="armwar.Command.UP"
       />
       <Button
         :image="press_icon"
         @button-mousedown="handleButtonMousedown"
         @button-mouseup="handleButtonMouseup"
-        buttonName="press"
+        :command="armwar.Command.GRAB"
       />
 
       <Button
         :image="rotate_ccw_icon"
         @button-mousedown="handleButtonMousedown"
         @button-mouseup="handleButtonMouseup"
-        buttonName="rotate_ccw"
+        :command="armwar.Command.ROTATE_CCW"
       />
       <Button
         :image="forward_icon"
         @button-mousedown="handleButtonMousedown"
         @button-mouseup="handleButtonMouseup"
-        buttonName="forward"
+        :command="armwar.Command.FORWARD"
       />
       <Button
         :image="rotate_cw_icon"
         @button-mousedown="handleButtonMousedown"
         @button-mouseup="handleButtonMouseup"
-        buttonName="rotate_cw"
+        :command="armwar.Command.ROTATE_CW"
       />
 
       <Button
         :image="left_icon"
         @button-mousedown="handleButtonMousedown"
         @button-mouseup="handleButtonMouseup"
-        buttonName="left"
+        :command="armwar.Command.LEFT"
       />
       <Button
         :image="backward_icon"
         @button-mousedown="handleButtonMousedown"
         @button-mouseup="handleButtonMouseup"
-        buttonName="backward"
+        :command="armwar.Command.BACKWARD"
       />
       <Button
         :image="right_icon"
         @button-mousedown="handleButtonMousedown"
         @button-mouseup="handleButtonMouseup"
-        buttonName="right"
+        :command="armwar.Command.RIGHT"
       />
 
       <Button
         :image="set_default_icon"
         @button-mousedown="handleButtonMousedown"
         @button-mouseup="handleButtonMouseup"
-        buttonName="set-zero"
+        :command="armwar.Command.SET"
       />
       <Button
         :image="down_icon"
         @button-mousedown="handleButtonMousedown"
         @button-mouseup="handleButtonMouseup"
-        buttonName="down"
+        :command="armwar.Command.DOWN"
       />
       <Button
         :image="reset_icon"
         @button-mousedown="handleButtonMousedown"
         @button-mouseup="handleButtonMouseup"
-        buttonName="reset"
+        :command="armwar.Command.RESET"
       />
 
       <div class="button-holder other-holder">
@@ -124,7 +124,7 @@ const handleTimerChanged = (value) => {
           :image="stop_icon"
           @button-mousedown="handleButtonMousedown"
           @button-mouseup="handleButtonMouseup"
-          buttonName="stop"
+          :command="armwar.Command.SET"
         />
       </div>
     </div>
