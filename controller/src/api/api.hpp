@@ -14,7 +14,21 @@ typedef func (*pm)();
  * @param motors: the motors object
  * @return 0 if success, 1 if error
  */
-int basePos(Motors& motors);
+int mid(Motors& motors);
+
+/**
+ * Set the base position to the actual position
+ * @param motors: the motors object
+ * @return 0 if success, 1 if error
+ */
+int set(Motors& motors);
+
+/**
+ * Reset the position of the motors to the base position
+ * @param motors: the motors object
+ * @return 0 if success, 1 if error
+ */
+int reset(Motors& motors);
 
 /**
  * Rotate the first motor by *nb_degree* degrees

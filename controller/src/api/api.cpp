@@ -15,7 +15,7 @@
  * @param motors: the motors object
  * @return 0 if success, 1 if error
  */
-int basePos(Motors& motors)
+int mid(Motors& motors)
 {
     Motors::Status res = Motors::Status::SUCCESS;
 
@@ -23,6 +23,46 @@ int basePos(Motors& motors)
     for (int i = 0; i < 4; i++)
     {
         res = motors.setPosMid(i);
+        if (res == Motors::Status::ERROR)
+            return res;
+    }
+
+    return res;
+}
+
+/**
+ * Set the base position to the actual position
+ * @param motors: the motors object
+ * @return 0 if success, 1 if error
+ */
+int set(Motors& motors)
+{
+    Motors::Status res = Motors::Status::SUCCESS;
+
+    // All motors except the Pliers motor
+    for (int i = 0; i < 4; i++)
+    {
+        Motors::setBasePos(i, motors.getPos(i));
+        if (res == Motors::Status::ERROR)
+            return res;
+    }
+
+    return res;
+}
+
+/**
+ * Reset the position of the motors to the base position
+ * @param motors: the motors object
+ * @return 0 if success, 1 if error
+ */
+int reset(Motors& motors)
+{
+    Motors::Status res = Motors::Status::SUCCESS;
+
+    // All motors except the Pliers motor
+    for (int i = 0; i < 4; i++)
+    {
+        res = motors.resetBasePos(i);
         if (res == Motors::Status::ERROR)
             return res;
     }
