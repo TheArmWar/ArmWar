@@ -40,6 +40,35 @@ export function buildStatedCommand(command, start) {
 }
 
 /**
+ * @function buildTimedSequence
+ * @param {Array<armwar.Command>} commands
+ * @param {Array<uint8_t>} durations
+ * @return armwar.TimedCommandSequence
+ */
+export function buildTimedSequence(commands, durations) {
+  let timedCommands = [];
+
+  for (let i = 0; i < commands.length; i++) {
+    const timedCommand = armwar.TimedCommand.create({
+      command: commands[i],
+      duration: durations[i],
+    });
+
+    timedCommands.push(timedCommand);
+  }
+
+  const timedSequence = armwar.TimedCommandSequence.create({
+    command: timedCommands,
+  });
+
+  const armCommand = armwar.ArmCommand.create({
+    timedSequence: timedSequence,
+  });
+
+  return armCommand;
+}
+
+/**
  * @function encodeCommand
  * @param {armwar.ArmCommand} payload (containing a statedCommand or a TimedCommand)
  * @returns byte array

@@ -2,9 +2,9 @@
 import { ref } from "vue";
 import SequenceItem from "./../sequence-item/sequence-item.vue";
 import { defineProps, getCurrentInstance } from "vue";
-const { emit } = getCurrentInstance();
 import play_icon from "@/assets/play_icon.png";
 import erase_icon from "@/assets/erase_icon.png";
+const { emit } = getCurrentInstance();
 
 const { sequenceName, items, id } = defineProps([
   "sequenceName",
@@ -18,7 +18,7 @@ function collapseSequence() {
 }
 
 function playSequence() {
-  emit("play-sequence", sequenceName);
+  emit("play-sequence", id);
 }
 </script>
 

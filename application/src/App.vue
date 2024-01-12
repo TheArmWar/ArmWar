@@ -11,6 +11,7 @@ import { Toaster, ToastType } from "./scripts/toaster/toaster.js";
 import {
   buildTimedCommand,
   buildStatedCommand,
+  buildTimedSequence,
   encodeCommand,
   decodeResponse,
 } from "./scripts/protocol/protocol.js";
@@ -50,6 +51,7 @@ async function processCommand(payload) {
   // Encode the payload
   const encodedPayload = encodeCommand(payload);
 
+  console.log(encodedPayload);
   // Sends the requests and wait for the response
   try {
     const response = await fetch(`http://${currentDevice.value.ip}/command`, {
@@ -81,9 +83,20 @@ function handleRecordingTimer() {
 
 /*----------------------------------------------------------------------------*/
 const handleSequencePlay = (sequenceId) => {
-  let sequence = allSequences.find((sequence) => sequence.id == sequenceId);
+  if (!isDeviceSelected(currentDevice.value)) return;
 
-  const payload = protocol.build;
+  const sequence = allSequences.value.find(
+    (sequence) => sequence.id == sequenceId,
+  );
+
+  const commands = sequence.items.map((items) => items.command);
+  const durations = sequence.items.map((items) => items.duration);
+
+  const payload = buildTimedSequence(commands, durations);
+
+  console.log(payload);
+
+  processCommand(payload);
 };
 
 const handleCommandPressed = (command, image) => {
@@ -115,7 +128,11 @@ const handleCommandReleased = (command, image) => {
 
   // Recording
   if (isRecording.value) {
-    currentSequence.value.push({ image: image, duration: timerValue.value });
+    currentSequence.value.push({
+      command: command,
+      image: image,
+      duration: timerValue.value,
+    });
   }
 
   // Playing
@@ -318,7 +335,7 @@ onMounted(async () => {
           v-bind:isRecording="isRecording"
           v-bind:allSequences="allSequences"
           @delete-sequence="handleDeleteSequence"
-          @play-sequence="handlePlaySequence"
+          @play-sequence="handleSequencePlay"
         />
       </div>
     </div>
