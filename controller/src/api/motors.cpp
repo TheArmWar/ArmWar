@@ -14,6 +14,9 @@ Motors::Motors(std::initializer_list<uint8_t> pins)
 
     // Create the motor pins vector
     this->motor_pins = std::vector<uint8_t>(pins);
+
+    // Create and initialize the base position vector
+    this->base_pos = std::vector<uint8_t>(4, SERVO_MID);
 }
 
 /**
@@ -118,4 +121,23 @@ Motors::Status Motors::setPosMin(uint8_t n)
 Motors::Status Motors::setPosMid(uint8_t n)
 {
     return this->setPos(n, SERVO_MID);
+}
+
+/**
+ * Set the base position of the motor "n"
+ * @param n: The nth motor of the pins list
+ */
+void Motors::setBasePos(uint8_t n)
+{
+    this->base_pos[n] = this->getPos(n);
+}
+
+/**
+ * Reset the position of the motor "n" to the base position
+ * @param n: The nth motor of the pins list
+ * @return Motors::Status
+ */
+Motors::Status Motors::resetBasePos(uint8_t n)
+{
+    return this->setPos(n, this->base_pos[n]);
 }

@@ -93,7 +93,21 @@ public:
      */
     Motors::Status setPosMid(uint8_t n);
 
+    /**
+     * Set the base position of the motor "n"
+     * @param n: The nth motor of the pins list
+     */
+    void setBasePos(uint8_t n);
+
+    /**
+     * Reset the position of the motor "n" to the base position
+     * @param n: The nth motor of the pins list
+     * @return Motors::Status
+     */
+    Motors::Status resetBasePos(uint8_t n);
+
 private:
     Adafruit_PWMServoDriver pwm_servo_driver;
     std::vector<uint8_t> motor_pins;
+    std::vector<uint8_t> base_pos;
 };
