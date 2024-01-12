@@ -16,7 +16,7 @@ Motors::Motors(std::initializer_list<uint8_t> pins)
     this->motor_pins = std::vector<uint8_t>(pins);
 
     // Create and initialize the base position vector
-    this->base_pos = std::vector<uint8_t>(4, SERVO_MID);
+    this->base_pos = std::vector<uint16_t>(4, SERVO_MID);
 }
 
 /**

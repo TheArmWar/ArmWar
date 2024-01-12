@@ -106,8 +106,9 @@ public:
      */
     Motors::Status resetBasePos(uint8_t n);
 
+    std::vector<uint16_t> base_pos;
+
 private:
     Adafruit_PWMServoDriver pwm_servo_driver;
     std::vector<uint8_t> motor_pins;
-    std::vector<uint8_t> base_pos;
 };

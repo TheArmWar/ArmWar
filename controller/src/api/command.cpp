@@ -1,8 +1,11 @@
 #include "command.hpp"
 
+//#include <mutex>
 #include <thread>
 
 #include "../config/config.hpp"
+
+// std::mutex mutex;
 
 /**
  * Parse a Stated command and execute it
@@ -12,7 +15,7 @@
  * @param motors: the motors object
  * @return 0 if success, 1 if error, -1 if command not found
  */
-int command(armwar_StatedCommand command, Motors motors)
+int command(armwar_StatedCommand command, Motors& motors)
 {
     // static Thread* thread = nullptr;
     static bool stop = false;
@@ -26,15 +29,17 @@ int command(armwar_StatedCommand command, Motors motors)
     if (command.start)
     {
         stop = false;
-        thread = std::thread([command, motors, fun, &stop]() mutable {
+        thread = std::thread([command, &motors, fun, &stop]() mutable {
             while (!stop)
             {
+                // mutex.lock();
                 fun(motors, 1);
+                // mutex.unlock();
+
                 delay(SERVO_SPEED);
             }
         });
     }
-
     else
     {
         stop = true;
@@ -51,7 +56,7 @@ int command(armwar_StatedCommand command, Motors motors)
  * @param motors: the motors object
  * @return 0 if success, 1 if error, -1 if command not found
  */
-int command(armwar_SpannedCommand command, Motors motors)
+int command(armwar_SpannedCommand command, Motors& motors)
 {
     func fun = parse_command(command.command);
 
@@ -68,7 +73,7 @@ int command(armwar_SpannedCommand command, Motors motors)
  * @param motors: the motors object
  * @return 0 if success, 1 if error, -1 if command not found
  */
-int command(armwar_TimedCommand command, Motors motors)
+int command(armwar_TimedCommand command, Motors& motors)
 {
     func fun = parse_command(command.command);
     int nb_degree = 1;
@@ -82,7 +87,9 @@ int command(armwar_TimedCommand command, Motors motors)
 
         while (current - start < command.duration)
         {
+            // mutex.lock();
             fun(motors, 1);
+            // mutex.unlock();
 
             delay(SERVO_SPEED);
 

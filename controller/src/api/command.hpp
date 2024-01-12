@@ -13,7 +13,7 @@
  * @param motors: the motors object
  * @return 0 if success, 1 if error, -1 if command not found
  */
-int command(armwar_StatedCommand command, Motors motors);
+int command(armwar_StatedCommand command, Motors& motors);
 
 /**
  * Parse a Spanned command and execute it
@@ -22,7 +22,7 @@ int command(armwar_StatedCommand command, Motors motors);
  * @param motors: the motors object
  * @return 0 if success, 1 if error, -1 if command not found
  */
-int command(armwar_SpannedCommand command, Motors motors);
+int command(armwar_SpannedCommand command, Motors& motors);
 
 /**
  * Parse a Timed command and execute it
@@ -31,4 +31,4 @@ int command(armwar_SpannedCommand command, Motors motors);
  * @param motors: the motors object
  * @return 0 if success, 1 if error, -1 if command not found
  */
-int command(armwar_TimedCommand command, Motors motors);
+int command(armwar_TimedCommand command, Motors& motors);
