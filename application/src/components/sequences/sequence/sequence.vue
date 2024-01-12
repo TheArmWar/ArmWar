@@ -1,13 +1,14 @@
 <script setup scoped>
 import { ref } from "vue";
+import SequenceItem from "./../sequence-item/sequence-item.vue";
 import { defineProps, getCurrentInstance } from "vue";
-const { emit } = getCurrentInstance();
 import play_icon from "@/assets/play_icon.png";
 import erase_icon from "@/assets/erase_icon.png";
+const { emit } = getCurrentInstance();
 
-const { sequenceName, movements, id } = defineProps([
+const { sequenceName, items, id } = defineProps([
   "sequenceName",
-  "movements",
+  "items",
   "id",
 ]);
 const isCollapsed = ref(false);
@@ -17,7 +18,7 @@ function collapseSequence() {
 }
 
 function playSequence() {
-  emit("play-sequence", sequenceName);
+  emit("play-sequence", id);
 }
 </script>
 
@@ -38,9 +39,11 @@ function playSequence() {
       </button>
     </div>
     <div class="movements-holder" v-if="!isCollapsed">
-      <div class="movement" v-for="movement in movements">
-        <img :src="movement" />
-      </div>
+      <SequenceItem
+        :icon="item.image"
+        :duration="item.duration"
+        v-for="item in items"
+      />
     </div>
   </div>
 </template>
@@ -114,21 +117,6 @@ button {
   overflow-x: auto;
   white-space: nowrap;
   padding: 10px;
-}
-
-.movement {
-  display: inline-block;
-  margin-right: 10px;
-}
-
-.movement > img {
-  width: 40px;
-  height: 40px;
-  margin-right: 10px;
-}
-
-.movement > img:last-child {
-  margin-right: 0;
 }
 
 .movements-holder::-webkit-scrollbar {

@@ -1,19 +1,19 @@
 <script setup>
 // Imports ref
 import { onMounted, ref } from "vue";
-
 import Header from "./components/header/header.vue";
 import Devices from "./components/devices/devices.vue";
 import Commands from "./components/commands/commands.vue";
 import Sequences from "./components/sequences/sequences.vue";
-
 import { Toaster, ToastType } from "./scripts/toaster/toaster.js";
 
 // Imports protocol
 import {
-  Protocol,
-  MessageType,
-  CommandType,
+  buildTimedCommand,
+  buildStatedCommand,
+  buildTimedSequence,
+  encodeCommand,
+  decodeResponse,
 } from "./scripts/protocol/protocol.js";
 
 /*----------------------------------------------------------------------------*/
@@ -25,12 +25,16 @@ const allSequences = ref([]);
 const allDevices = ref([]);
 
 const currentDevice = ref("");
+
 const isRecording = ref(false);
+const recordingTimerRefMs = ref(0);
+const recordingTimerHandler = ref(0);
 const currentSequence = ref([]);
 const currentSequenceName = ref("");
 
 const selectedMode = ref("press");
 const timerValue = ref(1000);
+
 const toast = ref("");
 
 /*----------------------------------------------------------------------------*/
@@ -45,12 +49,9 @@ function isDeviceSelected(currentDevice) {
 
 async function processCommand(payload) {
   // Encode the payload
-  const encodedPayload = protocol.encode(MessageType.ArmCommand, payload);
+  const encodedPayload = encodeCommand(payload);
 
-  console.log("Sent payload: ");
-  console.log(payload);
   console.log(encodedPayload);
-
   // Sends the requests and wait for the response
   try {
     const response = await fetch(`http://${currentDevice.value.ip}/command`, {
@@ -60,13 +61,10 @@ async function processCommand(payload) {
     });
 
     // Gets the response body
-    const encodedText = await response.text();
+    const encodedText = new TextEncoder().encode(await response.text());
 
     // Decode the response
-    const responseObj = protocol.decode(
-      MessageType.CommandResponse,
-      encodedText,
-    );
+    const responseObj = decodeResponse(encodedText);
 
     console.log("Got payload: ");
     console.log(responseObj);
@@ -79,27 +77,62 @@ async function processCommand(payload) {
   }
 }
 
-/*----------------------------------------------------------------------------*/
-const handleCommandPressed = async (buttonName, image) => {
-  // If we are recording, this handler should do nothing
-  // If the mode is not "press" then it should do nothing too
-  if (isRecording.value || selectedMode.value != "press") {
-    return;
-  }
+function handleRecordingTimer() {
+  timerValue.value = Date.now() - recordingTimerRefMs.value;
+}
 
+/*----------------------------------------------------------------------------*/
+const handleSequencePlay = (sequenceId) => {
   if (!isDeviceSelected(currentDevice.value)) return;
 
-  // Build a payload matching a start stated command
-  const payload = protocol.buildStatedCommand(buttonName, true);
+  const sequence = allSequences.value.find(
+    (sequence) => sequence.id == sequenceId,
+  );
 
-  // Send the command and wait the response
+  const commands = sequence.items.map((items) => items.command);
+  const durations = sequence.items.map((items) => items.duration);
+
+  const payload = buildTimedSequence(commands, durations);
+
+  console.log(payload);
+
   processCommand(payload);
 };
 
-const handleCommandReleased = async (buttonName, image) => {
+const handleCommandPressed = (command, image) => {
+  // If the mode is not "press" then it should do nothing too
+  if (selectedMode.value != "press") {
+    return;
+  }
+
+  recordingTimerRefMs.value = Date.now();
+  recordingTimerHandler.value = window.setInterval(handleRecordingTimer, 1);
+
+  // Playing
+  if (!isRecording.value) {
+    if (!isDeviceSelected(currentDevice.value)) return;
+
+    // Build a payload matching a start stated command
+    const payload = buildStatedCommand(command, true);
+
+    // Send the command and wait the response
+    processCommand(payload);
+  }
+};
+
+const handleCommandReleased = (command, image) => {
+  if (selectedMode.value == "press") {
+    window.clearInterval(recordingTimerHandler.value);
+    timerValue.value = Date.now() - recordingTimerRefMs.value;
+  }
+
   // Recording
   if (isRecording.value) {
-    currentSequence.value.push(image);
+    currentSequence.value.push({
+      command: command,
+      image: image,
+      duration: timerValue.value,
+    });
   }
 
   // Playing
@@ -109,8 +142,8 @@ const handleCommandReleased = async (buttonName, image) => {
     // Build a payload based on the selected mode
     const payload =
       selectedMode.value == "press"
-        ? protocol.buildStatedCommand(buttonName, false) // Press mode
-        : protocol.buildTimedCommand(buttonName, timerValue.value); // Timed mode
+        ? buildStatedCommand(command, false) // Press mode
+        : buildTimedCommand(command, timerValue.value); // Timed mode
 
     // Send the command and wait the response
     processCommand(payload);
@@ -148,7 +181,7 @@ const handleNewSequence = () => {
     console.log("final sequence", currentSequence.value);
     allSequences.value.push({
       name: currentSequenceName.value,
-      movements: currentSequence.value,
+      items: currentSequence.value,
       id: Date.now(),
     });
   }
@@ -227,13 +260,6 @@ const handleDeleteSequence = (sequenceId) => {
   }
 };
 
-const handlePlaySequence = async (sequenceName) => {
-  const sequence = allSequences.value.find(
-    (sequence) => sequence.name == sequenceName,
-  );
-  console.log("playing sequence", sequence);
-};
-
 const handleDeleteDevice = (deviceId) => {
   const found = allDevices.value.find((device) => device.id == deviceId);
 
@@ -274,7 +300,6 @@ const handleTimerChanged = (value) => {
 
 /*----------------------------------------------------------------------------*/
 onMounted(async () => {
-  protocol = await Protocol.load("armwar.proto");
   toast.value = new Toaster();
 
   // Force dismiss specific toast
@@ -310,7 +335,7 @@ onMounted(async () => {
           v-bind:isRecording="isRecording"
           v-bind:allSequences="allSequences"
           @delete-sequence="handleDeleteSequence"
-          @play-sequence="handlePlaySequence"
+          @play-sequence="handleSequencePlay"
         />
       </div>
     </div>
@@ -370,6 +395,7 @@ onMounted(async () => {
   --large: 50px;
   --medium: 25px;
   --small: 15px;
+  --very-small: 12px;
 
   font-family: "KronaOne", sans-serif;
 }
