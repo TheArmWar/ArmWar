@@ -2,79 +2,105 @@
 import { armwar } from "./armwar.js";
 
 /**
- * @function buildTimedCommand
+ * @function _buildTimedCommand
  * @param {armwar.Command} command
- * @param {int} duration duration in ms
- * @returns armwar.ArmCommand
+ * @param {int} duration
+ * @returns armwar.TimedCommand
  */
-export function buildTimedCommand(command, duration) {
-  const timedCommand = armwar.TimedCommand.create({
+function _buildTimedCommand(command, duration) {
+  return armwar.TimedCommand.create({
     command: command,
     duration: duration,
   });
+}
 
-  const armCommand = armwar.ArmCommand.create({
-    timedCommand: timedCommand,
+/**
+ * @function _buildStatedCommand
+ * @param {armwar.Command} command
+ * @param {boolean} start
+ * @returns armwar.StatedCommand
+ */
+function _buildStatedCommand(command, start) {
+  return armwar.StatedCommand.create({
+    command: command,
+    start: start,
   });
+}
 
-  return armCommand;
+/**
+ *
+ * @param {String} type of one of the possible ArmCommand
+ * @param {armwar.[TimedCommand, StatedCommand, TimedSequence]} value (an armwar payload)
+ * @returns Uint8Array of bytes (payload) that contains an ArmCommand wrapping a command.
+ */
+function _encodeArmCommand(type, value) {
+  const armCommand = armwar.ArmCommand.create({ [type]: value });
+
+  return armwar.ArmCommand.encode(armCommand).finish();
+}
+
+/**
+ * @function buildTimedCommand
+ * @param {armwar.Command} command
+ * @param {int} duration duration in ms
+ * @returns Uint8Array of bytes (encoded payload) containing an ArmCommand that wraps a TimedCommand
+ */
+export function buildTimedCommand(command, duration) {
+  const timedCommand = _buildTimedCommand(command, duration);
+
+  return _encodeArmCommand("timedCommand", timedCommand);
 }
 
 /**
  * @function buildStatedCommand
  * @param {armwar.Command} command
  * @param {uint8_t} start (0 = stop) (1 = start)
- * @returns armwar.ArmCommand
+ * @returns Uint8Array of bytes (encoded payload) containing an ArmCommand that wraps a StatedCommand
  */
 export function buildStatedCommand(command, start) {
-  const statedCommand = armwar.StatedCommand.create({
-    command: command,
-    start: start,
-  });
+  const statedCommand = _buildStatedCommand(command, start);
 
-  const armCommand = armwar.ArmCommand.create({
-    statedCommand: statedCommand,
-  });
-
-  return armCommand;
+  return _encodeArmCommand("statedCommand", statedCommand);
 }
 
 /**
  * @function buildTimedSequence
  * @param {Array<armwar.Command>} commands
  * @param {Array<uint8_t>} durations
- * @return armwar.TimedCommandSequence
+ * @returns Uint8Array of bytes (encoded payload) containing an ArmCommand that wraps a TimedSequence
  */
 export function buildTimedSequence(commands, durations) {
   let timedCommands = [];
 
   for (let i = 0; i < commands.length; i++) {
-    const timedCommand = armwar.TimedCommand.create({
-      command: commands[i],
-      duration: durations[i],
-    });
-
-    timedCommands.push(timedCommand);
+    timedCommands.push(_buildTimedCommand(commands[i], durations[i]));
   }
 
   const timedSequence = armwar.TimedCommandSequence.create({
     command: timedCommands,
   });
 
-  const armCommand = armwar.ArmCommand.create({
-    timedSequence: timedSequence,
-  });
-
-  return armCommand;
+  return _encodeArmCommand("timedSequence", timedSequence);
 }
 
 /**
- * @function encodeCommand
- * @param {armwar.ArmCommand} payload (containing a statedCommand or a TimedCommand)
- * @returns byte array
+ * @function buildConnectCommand
+ * @returns Uint8Array of bytes (encoded payload) that wraps a Connect command
  */
-export function encodeCommand(payload) {
-  return armwar.ArmCommand.encode(payload).finish();
+export function buildConnectCommand() {
+  const connectCommand = armwar.Connect.create({ connect: true });
+
+  return armwar.Connect.encode(connectCommand).finish();
+}
+
+/**
+ * @function buildDisconnectCommand
+ * @returns Uint8Array of bytes (encoded payload) that wraps a disconnect command
+ */
+export function buildDisconnectCommand() {
+  const disconnectCommand = armwar.Disconnect.create({ disconnect: true });
+
+  return armwar.Disconnect.encode(disconnectCommand).finish();
 }
 
 /**

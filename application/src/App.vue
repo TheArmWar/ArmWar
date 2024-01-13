@@ -12,13 +12,13 @@ import {
   buildTimedCommand,
   buildStatedCommand,
   buildTimedSequence,
-  encodeCommand,
-  decodeResponse,
+  buildConnectCommand,
+  buildDisconnectCommand,
 } from "./scripts/protocol/protocol.js";
 
+// Imports requests
+import { RequestStatus, request } from "./scripts/requests/requests.js";
 /*----------------------------------------------------------------------------*/
-const timeout_ms = 3000;
-
 var protocol = null;
 
 const allSequences = ref([]);
@@ -38,6 +38,28 @@ const timerValue = ref(1000);
 const toast = ref("");
 
 /*----------------------------------------------------------------------------*/
+/**
+ * @function processRequest Wraps the request to avoid telling the toast each time
+ * @param {String} ip
+ * @param {String} endpoint
+ * @param {Uint8Array<Byte>} payload
+ * @returns boolean (True on success, False on error)
+ */
+async function processRequest(ip, endpoint, payload) {
+  const result = await request(ip, endpoint, payload);
+
+  if (result.result == RequestStatus.SUCCESS) {
+    toast.value.display(ToastType.Success, "Command success");
+    return true;
+  } else if (result.result == RequestStatus.ERROR) {
+    toast.value.display(ToastType.Error, "Command error: " + result.message);
+    return false;
+  } else {
+    toast.value.display(ToastType.Error, "Command failed: " + result.message);
+    return false;
+  }
+}
+
 function isDeviceSelected(currentDevice) {
   if (currentDevice == null || currentDevice == "") {
     toast.value.display(ToastType.Error, "No device selected");
@@ -45,36 +67,6 @@ function isDeviceSelected(currentDevice) {
   }
 
   return true;
-}
-
-async function processCommand(payload) {
-  // Encode the payload
-  const encodedPayload = encodeCommand(payload);
-
-  console.log(encodedPayload);
-  // Sends the requests and wait for the response
-  try {
-    const response = await fetch(`http://${currentDevice.value.ip}/command`, {
-      method: "POST",
-      body: encodedPayload,
-      signal: AbortSignal.timeout(timeout_ms),
-    });
-
-    // Gets the response body
-    const encodedText = new TextEncoder().encode(await response.text());
-
-    // Decode the response
-    const responseObj = decodeResponse(encodedText);
-
-    console.log("Got payload: ");
-    console.log(responseObj);
-
-    if (responseObj.success)
-      toast.value.display(ToastType.Success, "Command success");
-    else toast.value.display(ToastType.Error, "Command failed");
-  } catch (error) {
-    toast.value.display(ToastType.Error, error.message);
-  }
 }
 
 function handleRecordingTimer() {
@@ -96,7 +88,7 @@ const handleSequencePlay = (sequenceId) => {
 
   console.log(payload);
 
-  processCommand(payload);
+  processRequest(currentDevice.value.ip, "command", payload);
 };
 
 const handleCommandPressed = (command, image) => {
@@ -116,7 +108,7 @@ const handleCommandPressed = (command, image) => {
     const payload = buildStatedCommand(command, true);
 
     // Send the command and wait the response
-    processCommand(payload);
+    processRequest(currentDevice.value.ip, "command", payload);
   }
 };
 
@@ -146,7 +138,7 @@ const handleCommandReleased = (command, image) => {
         : buildTimedCommand(command, timerValue.value); // Timed mode
 
     // Send the command and wait the response
-    processCommand(payload);
+    processRequest(currentDevice.value.ip, "command", payload);
   }
 };
 
@@ -222,28 +214,54 @@ const handleNewDevice = () => {
   console.log(allDevices.value);
 };
 
-const handleDeviceClicked = (deviceId) => {
+const handleDeviceClicked = async (deviceId) => {
   let device = allDevices.value.find((device) => device.id == deviceId);
+
+  // Update the active device
+  allDevices.value.forEach((device) => {
+    device.active = device.id == deviceId;
+  });
 
   // Disconnect if the clicked device is connected
   if (device.connected) {
-    device.connected = false;
-    currentDevice.value = "";
+    const disconnectCommand = buildDisconnectCommand();
+    const disconnected = await processRequest(
+      device.ip,
+      "logout",
+      disconnectCommand,
+    );
+
+    if (disconnected) {
+      device.connected = false;
+      currentDevice.value = "";
+    }
   }
 
-  // Device is not already connected so disconnect the previous connceted device
-  // and connect the clicked device
+  // Device is not already connected so disconnect the previous connected device and connect the clicked device
   else {
     let alreadyConnectedDevice = allDevices.value.find(
       (device) => device.connected,
     );
 
-    device.connected = true;
+    // Check if there is an already connected device
+    if (alreadyConnectedDevice != null) {
+      const disconnectCommand = buildDisconnectCommand();
+      const disconnected = await processRequest(
+        alreadyConnectedDevice.ip,
+        "logout",
+        disconnectCommand,
+      );
 
-    if (alreadyConnectedDevice != null)
-      alreadyConnectedDevice.connected = false;
+      if (disconnected) alreadyConnectedDevice.connected = false;
+    }
 
-    currentDevice.value = device;
+    const connectCommand = buildConnectCommand();
+    const connected = await processRequest(device.ip, "login", connectCommand);
+
+    if (connected) {
+      device.connected = true;
+      currentDevice.value = device;
+    }
   }
 };
 
