@@ -11,9 +11,6 @@ const handleDeleteDevice = (deviceId) => {
 };
 
 const handleDeviceClicked = (deviceId) => {
-  allDevices.forEach((device) => {
-    device.active = device.id == deviceId;
-  });
   emit("device-clicked", deviceId);
 };
 </script>
