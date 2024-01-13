@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, getCurrentInstance } from "vue";
+import { getCurrentInstance } from "vue";
 
 const { emit } = getCurrentInstance();
 

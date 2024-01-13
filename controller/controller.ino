@@ -18,7 +18,7 @@
 HTTPServer server = HTTPServer(SERVER_PORT);
 
 // Motors api global variable
-Motors motors = Motors({ 0, 3, 7, 11, 15 });
+Motors* motors = new Motors({ 0, 3, 7, 11, 15 });
 
 /**
  * Motors:
@@ -39,16 +39,16 @@ void setup()
     wifiConnect(SECRET_SSID, SECRET_PASSWORD);
 
     // Motors setup
-    motors.begin();
+    motors->begin();
 
     // Server setup
-    serverSetup(&server, &motors);
+    serverSetup(&server, motors);
 
     // Init motors to base bos
-    basePos(motors);
+    mid(*motors);
 
     // motors.setPosPlierMin(4);
--    Serial.println("Setup done");
+    Serial.println("Setup done");
 }
 
 /* -------------------------------------------------------------------------- */

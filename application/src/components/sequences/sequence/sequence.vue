@@ -1,7 +1,7 @@
 <script setup scoped>
 import { ref } from "vue";
 import SequenceItem from "./../sequence-item/sequence-item.vue";
-import { defineProps, getCurrentInstance } from "vue";
+import { getCurrentInstance } from "vue";
 import play_icon from "@/assets/play_icon.png";
 import erase_icon from "@/assets/erase_icon.png";
 const { emit } = getCurrentInstance();

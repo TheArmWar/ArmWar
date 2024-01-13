@@ -19,16 +19,18 @@ int mid(Motors& motors);
 /**
  * Set the base position to the actual position
  * @param motors: the motors object
+ * @param discarded: unused
  * @return 0 if success, 1 if error
  */
-int set(Motors& motors);
+int set(Motors& motors, int discarded);
 
 /**
  * Reset the position of the motors to the base position
  * @param motors: the motors object
+ * @param discarded: unused
  * @return 0 if success, 1 if error
  */
-int reset(Motors& motors);
+int reset(Motors& motors, int discarded);
 
 /**
  * Rotate the first motor by *nb_degree* degrees

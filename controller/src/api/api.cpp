@@ -33,19 +33,16 @@ int mid(Motors& motors)
 /**
  * Set the base position to the actual position
  * @param motors: the motors object
+ * @param discarded: unused
  * @return 0 if success, 1 if error
  */
-int set(Motors& motors)
+int set(Motors& motors, int discarded)
 {
     Motors::Status res = Motors::Status::SUCCESS;
 
     // All motors except the Pliers motor
     for (int i = 0; i < 4; i++)
-    {
-        Motors::setBasePos(i, motors.getPos(i));
-        if (res == Motors::Status::ERROR)
-            return res;
-    }
+        motors.setBasePos(i);
 
     return res;
 }
@@ -53,9 +50,10 @@ int set(Motors& motors)
 /**
  * Reset the position of the motors to the base position
  * @param motors: the motors object
+ * @param discarded: unused
  * @return 0 if success, 1 if error
  */
-int reset(Motors& motors)
+int reset(Motors& motors, int discarded)
 {
     Motors::Status res = Motors::Status::SUCCESS;
 
@@ -102,8 +100,8 @@ int left(Motors& motors, int nb_degree)
  */
 int right(Motors& motors, int nb_degree)
 {
-    int right_pos = motors.getPos(0);
     Motors::Status res = Motors::Status::SUCCESS;
+    int right_pos = motors.getPos(0);
 
     for (int i = 0; i < nb_degree; i++)
     {
@@ -351,6 +349,12 @@ func parse_command(armwar_Command command)
     case armwar_Command_RELEASE:
         Serial.println("RELEASE");
         return &release;
+    case armwar_Command_SET:
+        Serial.println("SET");
+        return &set;
+    case armwar_Command_RESET:
+        Serial.println("RESET");
+        return &reset;
     default:
         return NULL;
     }
