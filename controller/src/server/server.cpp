@@ -60,6 +60,29 @@ bool encode_string(pb_ostream_t* stream, const pb_field_t* field,
     return pb_encode_string(stream, (uint8_t*)str->c_str(), str->length());
 }
 
+void send_response(HTTPResponse* res, bool success, std::string* message)
+{
+    armwar_CommandResponse cmdResponse = armwar_CommandResponse_init_zero;
+    uint8_t respBuffer[SERVER_BUFFER_SIZE] = { 0 };
+
+    res->setHeader("Access-Control-Allow-Origin", "*");
+
+    cmdResponse.success = success;
+    pb_ostream_t ostream =
+        pb_ostream_from_buffer(respBuffer, SERVER_BUFFER_SIZE);
+    cmdResponse.message.arg = (void*)message;
+    cmdResponse.message.funcs.encode = &encode_string;
+    if (!pb_encode(&ostream, armwar_CommandResponse_fields, &cmdResponse))
+    {
+        Serial.println("encoding failed: ");
+        Serial.println(ostream.errmsg);
+        res->error();
+        return;
+    }
+
+    res->write(respBuffer, ostream.bytes_written);
+}
+
 /**
  * @brief Construct a new Arm War Server object
  *
@@ -111,15 +134,12 @@ void handleStatus(HTTPRequest* req, HTTPResponse* res)
 void handleCommand(HTTPRequest* req, HTTPResponse* res)
 {
     armwar_ArmCommand cmd = armwar_ArmCommand_init_zero;
-    armwar_CommandResponse cmdResponse = armwar_CommandResponse_init_zero;
-    uint8_t respBuffer[SERVER_BUFFER_SIZE] = { 0 };
     uint8_t* buffer;
     size_t buf_size;
     size_t buf_len;
     bool success;
     std::string errorMessage{ "" };
 
-    res->setHeader("Access-Control-Allow-Origin", "*");
     buffer = (uint8_t*)malloc(SERVER_BUFFER_SIZE);
     buf_size = SERVER_BUFFER_SIZE;
     buf_len = 0;
@@ -139,9 +159,9 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
 
             if (new_buffer == NULL)
             {
-                success = false;
                 errorMessage = "The command sequence is too long.";
-                goto sendResponse;
+                send_response(res, false, &errorMessage);
+                return;
             }
 
             buffer = new_buffer;
@@ -152,9 +172,9 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
     // decode armwar_ArmCommand
     if (!decode_command(&cmd, buffer, buf_len))
     {
-        success = false;
         errorMessage = "Failed to decode the command.";
-        goto sendResponse;
+        send_response(res, false, &errorMessage);
+        return;
     }
 
     // Call the correct api depending on the command type
@@ -193,22 +213,6 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
         break;
     }
 
-    // construct armwar_CommandResponse and free buffer
-sendResponse:
     free(buffer);
-    cmdResponse.success = success;
-    pb_ostream_t ostream =
-        pb_ostream_from_buffer(respBuffer, SERVER_BUFFER_SIZE);
-    cmdResponse.message.arg = (void*)&errorMessage;
-    cmdResponse.message.funcs.encode = &encode_string;
-    success = pb_encode(&ostream, armwar_CommandResponse_fields, &cmdResponse);
-    if (!success)
-    {
-        Serial.println("encoding failed: ");
-        Serial.println(ostream.errmsg);
-        res->error();
-        return;
-    }
-
-    res->write(respBuffer, ostream.bytes_written);
+    send_response(res, success, &errorMessage);
 }
