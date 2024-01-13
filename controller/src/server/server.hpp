@@ -18,6 +18,11 @@
 #include "pb_encode.h"
 using namespace httpsserver;
 
+#define DEFAULT_CONNECTION_TIMEOUT 60
+
+void middlewareAuth(HTTPRequest* req, HTTPResponse* res, std::function<void()> next);
 void handleStatus(HTTPRequest* req, HTTPResponse* res);
+void handleLogin(HTTPRequest* req, HTTPResponse* res);
+void handleLogout(HTTPRequest* req, HTTPResponse* res);
 void handleCommand(HTTPRequest* req, HTTPResponse* res);
 void serverSetup(HTTPServer* server, Motors* pwm);
