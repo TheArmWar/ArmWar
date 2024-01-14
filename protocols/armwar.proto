@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package armwar;
 
+import 'nanopb.proto';
+
 /**
  * A list of commands that can be sent to the arm.
  */
@@ -100,6 +102,7 @@ message SpannedCommand {
 message SpannedCommandSequence { repeated SpannedCommand command = 1; }
 
 message ArmCommand {
+  option (nanopb_msgopt).no_unions = true;
   oneof command {
     TimedCommand timed_command = 1;
     TimedCommandSequence timed_sequence = 2;
