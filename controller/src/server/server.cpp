@@ -16,7 +16,7 @@ using namespace httpsserver;
 
 Motors* g_motors;
 
-IPAddress *ip = NULL;
+IPAddress* ip = NULL;
 time_t lastConnectionTime = 0;
 time_t connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
 
@@ -87,7 +87,8 @@ void send_response(HTTPResponse* res, bool success, std::string* message)
     res->write(respBuffer, ostream.bytes_written);
 }
 
-void middlewareAuth(HTTPRequest* req, HTTPResponse* res, std::function<void()> next)
+void middlewareAuth(HTTPRequest* req, HTTPResponse* res,
+                    std::function<void()> next)
 {
     // Currently, the middleware is only used to check if the client is
     // connected to the arm by checking the stored ip address.
@@ -98,8 +99,8 @@ void middlewareAuth(HTTPRequest* req, HTTPResponse* res, std::function<void()> n
 
     // If the client is trying to connect and no one is connected or the timeout
     // of the precedent client was reached, continue
-    if (req->getRequestString().substr(0, 7) == "/login" &&
-        (!ip || difftime(now, lastConnectionTime) > connectionTimeout))
+    if (req->getRequestString().substr(0, 7) == "/login"
+        && (!ip || difftime(now, lastConnectionTime) > connectionTimeout))
     {
         lastConnectionTime = now;
         next();
@@ -311,7 +312,7 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
         break;
     case armwar_ArmCommand_spanned_command_tag:
         Serial.println("Received Spanned command");
-        // TODO: need api Spanned command handler
+        command(cmd.command.spanned_command, *g_motors);
         break;
     case armwar_ArmCommand_spanned_sequence_tag:
         Serial.println("Received Spanned sequence");
