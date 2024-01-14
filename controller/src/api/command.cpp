@@ -29,21 +29,30 @@ int command(armwar_StatedCommand command, Motors& motors)
     if (command.start)
     {
         stop = false;
-        thread = std::thread([command, &motors, fun, &stop]() mutable {
-            while (!stop)
-            {
-                // mutex.lock();
-                fun(motors, 1);
-                // mutex.unlock();
+        if (thread.joinable()){
+            Serial.println("Thread is already started");
+        } else {
+            thread = std::thread([command, &motors, fun, &stop]() mutable {
+                while (!stop)
+                {
+                    // mutex.lock();
+                    fun(motors, 1);
+                    // mutex.unlock();
 
-                delay(SERVO_SPEED);
-            }
-        });
+                    delay(SERVO_SPEED);
+                }
+            });
+        }
     }
     else
     {
         stop = true;
-        thread.join();
+        if (thread.joinable()){
+            thread.join();
+        }
+        else{
+            Serial.println("Thread is not joinable");
+        }
     }
 
     return 0;

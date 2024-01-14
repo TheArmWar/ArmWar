@@ -280,6 +280,7 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
             {
                 errorMessage = "The command sequence is too long.";
                 send_response(res, false, &errorMessage);
+                free(buffer);
                 return;
             }
 
@@ -293,6 +294,7 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
     {
         errorMessage = "Failed to decode the command.";
         send_response(res, false, &errorMessage);
+        free(buffer);
         return;
     }
 
