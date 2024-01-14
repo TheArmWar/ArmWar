@@ -1,11 +1,8 @@
 #include "command.hpp"
 
-//#include <mutex>
 #include <thread>
 
 #include "../config/config.hpp"
-
-// std::mutex mutex;
 
 /**
  * Parse a Stated command and execute it
@@ -18,7 +15,6 @@
 int command(armwar_StatedCommand command, Motors& motors)
 {
     // static Thread* thread = nullptr;
-    static bool stop = false;
     static std::thread thread;
 
     func fun = parse_command(command.command);
@@ -28,16 +24,18 @@ int command(armwar_StatedCommand command, Motors& motors)
 
     if (command.start)
     {
-        stop = false;
-        if (thread.joinable()){
+        if (thread.joinable())
+        {
             Serial.println("Thread is already started");
-        } else {
-            thread = std::thread([command, &motors, fun, &stop]() mutable {
-                while (!stop)
+        }
+        else
+        {
+            thread = std::thread([command, &motors, fun]() mutable {
+                Motors::Status status = Motors::Status::SUCCESS;
+
+                while (status != Motors::Status::CANCEL)
                 {
-                    // mutex.lock();
-                    fun(motors, 1);
-                    // mutex.unlock();
+                    status = fun(motors, 1);
 
                     delay(SERVO_SPEED);
                 }
@@ -46,13 +44,20 @@ int command(armwar_StatedCommand command, Motors& motors)
     }
     else
     {
-        stop = true;
-        if (thread.joinable()){
+        // Signal motors to stop
+        motors.disable();
+
+        if (thread.joinable())
+        {
             thread.join();
         }
-        else{
+        else
+        {
             Serial.println("Thread is not joinable");
         }
+
+        // Enable back the motors
+        motors.enable();
     }
 
     return 0;
@@ -90,15 +95,19 @@ int command(armwar_TimedCommand command, Motors& motors)
     if (fun == NULL)
         return -1;
 
-    std::thread([command, motors, fun]() mutable {
+    std::thread([command, &motors, fun]() mutable {
         int start = millis();
         int current = millis();
+        Motors::Status status = Motors::Status::SUCCESS;
 
         while (current - start < command.duration)
         {
-            // mutex.lock();
-            fun(motors, 1);
-            // mutex.unlock();
+            status = fun(motors, 1);
+            // If motors are disabled, command should stop
+            if (status == Motors::Status::CANCEL)
+            {
+                break;
+            }
 
             delay(SERVO_SPEED);
 

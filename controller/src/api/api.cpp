@@ -15,7 +15,7 @@
  * @param motors: the motors object
  * @return 0 if success, 1 if error
  */
-int mid(Motors& motors)
+Motors::Status mid(Motors& motors)
 {
     Motors::Status res = Motors::Status::SUCCESS;
 
@@ -23,7 +23,7 @@ int mid(Motors& motors)
     for (int i = 0; i < 4; i++)
     {
         res = motors.setPosMid(i);
-        if (res == Motors::Status::ERROR)
+        if (res != Motors::Status::SUCCESS)
             return res;
     }
 
@@ -36,7 +36,7 @@ int mid(Motors& motors)
  * @param discarded: unused
  * @return 0 if success, 1 if error
  */
-int set(Motors& motors, int discarded)
+Motors::Status set(Motors& motors, int discarded)
 {
     Motors::Status res = Motors::Status::SUCCESS;
 
@@ -53,7 +53,7 @@ int set(Motors& motors, int discarded)
  * @param discarded: unused
  * @return 0 if success, 1 if error
  */
-int reset(Motors& motors, int discarded)
+Motors::Status reset(Motors& motors, int discarded)
 {
     Motors::Status res = Motors::Status::SUCCESS;
 
@@ -61,7 +61,7 @@ int reset(Motors& motors, int discarded)
     for (int i = 0; i < 4; i++)
     {
         res = motors.resetBasePos(i);
-        if (res == Motors::Status::ERROR)
+        if (res != Motors::Status::SUCCESS)
             return res;
     }
 
@@ -74,7 +74,7 @@ int reset(Motors& motors, int discarded)
  * @param nb_degree: the number of degrees to rotate
  * @return 0 if success, 1 if error
  */
-int left(Motors& motors, int nb_degree)
+Motors::Status left(Motors& motors, int nb_degree)
 {
     Motors::Status res = Motors::Status::SUCCESS;
     int left_pos = motors.getPos(0);
@@ -85,7 +85,7 @@ int left(Motors& motors, int nb_degree)
 
         res = motors.setPos(0, left_pos);
 
-        if (res == Motors::Status::ERROR)
+        if (res != Motors::Status::SUCCESS)
             return res;
     }
 
@@ -98,7 +98,7 @@ int left(Motors& motors, int nb_degree)
  * @param nb_degree: the number of degrees to rotate
  * @return 0 if success, 1 if error
  */
-int right(Motors& motors, int nb_degree)
+Motors::Status right(Motors& motors, int nb_degree)
 {
     Motors::Status res = Motors::Status::SUCCESS;
     int right_pos = motors.getPos(0);
@@ -109,7 +109,7 @@ int right(Motors& motors, int nb_degree)
 
         res = motors.setPos(0, right_pos);
 
-        if (res == Motors::Status::ERROR)
+        if (res != Motors::Status::SUCCESS)
             return res;
     }
 
@@ -122,7 +122,7 @@ int right(Motors& motors, int nb_degree)
  * @param nb_degree: the number of degrees to rotate
  * @return 0 if success, 1 if error
  */
-int up(Motors& motors, int nb_degree)
+Motors::Status up(Motors& motors, int nb_degree)
 {
     int up_pos_1 = motors.getPos(1);
     int up_pos_2 = motors.getPos(2);
@@ -132,12 +132,12 @@ int up(Motors& motors, int nb_degree)
     {
         up_pos_1 += SERVO_UNIT;
         res = motors.setPos(1, up_pos_1);
-        if (res == Motors::Status::ERROR)
+        if (res != Motors::Status::SUCCESS)
             return res;
 
         up_pos_2 -= SERVO_UNIT;
         res = motors.setPos(2, up_pos_2);
-        if (res == Motors::Status::ERROR)
+        if (res != Motors::Status::SUCCESS)
             return res;
     }
 
@@ -150,7 +150,7 @@ int up(Motors& motors, int nb_degree)
  * @param nb_degree: the number of degrees to rotate
  * @return 0 if success, 1 if error
  */
-int down(Motors& motors, int nb_degree)
+Motors::Status down(Motors& motors, int nb_degree)
 {
     int down_pos_1 = motors.getPos(1);
     int down_pos_2 = motors.getPos(2);
@@ -160,12 +160,12 @@ int down(Motors& motors, int nb_degree)
     {
         down_pos_1 -= SERVO_UNIT;
         res = motors.setPos(1, down_pos_1);
-        if (res == Motors::Status::ERROR)
+        if (res != Motors::Status::SUCCESS)
             return res;
 
         down_pos_2 += SERVO_UNIT;
         res = motors.setPos(2, down_pos_2);
-        if (res == Motors::Status::ERROR)
+        if (res != Motors::Status::SUCCESS)
             return res;
     }
 
@@ -177,7 +177,7 @@ int down(Motors& motors, int nb_degree)
  * @param motors: the motors object
  * @return 0 if success, 1 if error
  */
-int forward(Motors& motors, int nb_degree)
+Motors::Status forward(Motors& motors, int nb_degree)
 {
     int positions[2] = { motors.getPos(1) - (nb_degree * SERVO_UNIT),
                          motors.getPos(2) - (nb_degree * SERVO_UNIT) };
@@ -186,7 +186,7 @@ int forward(Motors& motors, int nb_degree)
     for (int i = 0; i < 2; i++)
     {
         res = motors.setPos(i + 1, positions[i]);
-        if (res == Motors::Status::ERROR)
+        if (res != Motors::Status::SUCCESS)
             return res;
     }
 
@@ -198,7 +198,7 @@ int forward(Motors& motors, int nb_degree)
  * @param motors: the motors object
  * @return 0 if success, 1 if error
  */
-int backward(Motors& motors, int nb_degree)
+Motors::Status backward(Motors& motors, int nb_degree)
 {
     Motors::Status res = Motors::Status::SUCCESS;
     int positions[2] = { motors.getPos(1) + (nb_degree * SERVO_UNIT),
@@ -207,7 +207,7 @@ int backward(Motors& motors, int nb_degree)
     for (int i = 0; i < 2; i++)
     {
         res = motors.setPos(i + 1, positions[i]);
-        if (res == Motors::Status::ERROR)
+        if (res != Motors::Status::SUCCESS)
             return res;
     }
 
@@ -220,7 +220,7 @@ int backward(Motors& motors, int nb_degree)
  * @param nb_degree: the number of degrees to rotate
  * @return 0 if success, 1 if error
  */
-int rotate_cw(Motors& motors, int nb_degree)
+Motors::Status rotate_cw(Motors& motors, int nb_degree)
 {
     int rotate_pos = motors.getPos(3);
     Motors::Status res = Motors::Status::SUCCESS;
@@ -229,7 +229,7 @@ int rotate_cw(Motors& motors, int nb_degree)
     {
         rotate_pos += SERVO_UNIT;
         res = motors.setPos(3, rotate_pos);
-        if (res == Motors::Status::ERROR)
+        if (res != Motors::Status::SUCCESS)
             return res;
     }
 
@@ -242,7 +242,7 @@ int rotate_cw(Motors& motors, int nb_degree)
  * @param nb_degree: the number of degrees to rotate
  * @return 0 if success, 1 if error
  */
-int rotate_ccw(Motors& motors, int nb_degree)
+Motors::Status rotate_ccw(Motors& motors, int nb_degree)
 {
     int rotate_pos = motors.getPos(3);
     Motors::Status res = Motors::Status::SUCCESS;
@@ -251,7 +251,7 @@ int rotate_ccw(Motors& motors, int nb_degree)
     {
         rotate_pos -= SERVO_UNIT;
         res = motors.setPos(3, rotate_pos);
-        if (res == Motors::Status::ERROR)
+        if (res != Motors::Status::SUCCESS)
             return res;
     }
 
@@ -264,7 +264,7 @@ int rotate_ccw(Motors& motors, int nb_degree)
  * @param nb_degree: the number of degrees to rotate
  * @return 0 if success, 1 if error
  */
-int grab(Motors& motors, int nb_degree)
+Motors::Status grab(Motors& motors, int nb_degree)
 {
     int grab_pos = motors.getPos(4);
     Motors::Status res = Motors::Status::SUCCESS;
@@ -276,7 +276,7 @@ int grab(Motors& motors, int nb_degree)
     {
         grab_pos += SERVO_UNIT;
         res = motors.setPosPlier(4, grab_pos);
-        if (res == Motors::Status::ERROR)
+        if (res != Motors::Status::SUCCESS)
             return res;
     }
 
@@ -289,7 +289,7 @@ int grab(Motors& motors, int nb_degree)
  * @param nb_degree: the number of degrees to rotate
  * @return 0 if success, 1 if error
  */
-int release(Motors& motors, int nb_degree)
+Motors::Status release(Motors& motors, int nb_degree)
 {
     int release_pos = motors.getPos(4);
     Motors::Status res = Motors::Status::SUCCESS;
@@ -302,11 +302,29 @@ int release(Motors& motors, int nb_degree)
     {
         release_pos -= SERVO_UNIT;
         res = motors.setPosPlier(4, release_pos);
-        if (res == Motors::Status::ERROR)
+        if (res != Motors::Status::SUCCESS)
             return res;
     }
 
     return res;
+}
+
+/**
+ * Tells any command to stop
+ * @param motors: the motors object
+ * @param discarded: unused
+ * @return 0 if success, 1 if error
+ */
+Motors::Status stop(Motors& motors, int discarded)
+{
+    motors.disable();
+
+    // Ensure that the disable has been taken in account
+    delay(SERVO_SPEED * 2);
+
+    motors.enable();
+
+    return Motors::Status::SUCCESS;
 }
 
 /**
@@ -355,6 +373,9 @@ func parse_command(armwar_Command command)
     case armwar_Command_RESET:
         Serial.println("RESET");
         return &reset;
+    case armwar_Command_STOP:
+        Serial.println("STOP");
+        return &stop;
     default:
         return NULL;
     }

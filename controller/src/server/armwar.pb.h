@@ -24,7 +24,8 @@ typedef enum _armwar_Command {
     armwar_Command_GRAB = 8,
     armwar_Command_RELEASE = 9,
     armwar_Command_SET = 10,
-    armwar_Command_RESET = 11
+    armwar_Command_RESET = 11,
+    armwar_Command_STOP = 12
 } armwar_Command;
 
 /* Struct definitions */
@@ -122,8 +123,8 @@ extern "C" {
 
 /* Helper constants for enums */
 #define _armwar_Command_MIN armwar_Command_UP
-#define _armwar_Command_MAX armwar_Command_RESET
-#define _armwar_Command_ARRAYSIZE ((armwar_Command)(armwar_Command_RESET+1))
+#define _armwar_Command_MAX armwar_Command_STOP
+#define _armwar_Command_ARRAYSIZE ((armwar_Command)(armwar_Command_STOP+1))
 
 
 

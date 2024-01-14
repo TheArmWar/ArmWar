@@ -38,6 +38,14 @@ const timerValue = ref(1000);
 const toast = ref("");
 
 /*----------------------------------------------------------------------------*/
+function isSpan(command) {
+  return (
+    command == armwar.Command.STOP ||
+    command == armwar.Command.SET ||
+    command == armwar.Command.RESET
+  );
+}
+
 async function disconnect(device) {
   const disconnectCommand = buildDisconnectCommand();
   const disconnected = await processRequest(
@@ -141,9 +149,11 @@ const handleCommandPressed = (command, image) => {
 
     // Build a payload based on the mode
     let payload = "";
-    if (command == armwar.Command.SET || command == armwar.Command.RESET)
+    if (isSpan(command)) {
       payload = buildSpannedCommand(command, 0.0);
-    else payload = buildStatedCommand(command, true);
+    } else {
+      payload = buildStatedCommand(command, true);
+    }
 
     // Send the command and wait the response
     processRequest(currentDevice.value.ip, "command", payload);
@@ -171,12 +181,15 @@ const handleCommandReleased = (command, image) => {
 
     // Build a payload based on the selected mode
     let payload = "";
-    if (command == armwar.Command.SET || command == armwar.Command.RESET) {
-      if (selectedMode.value == "press") return;
-      else payload = buildSpannedCommand(command, 0.0);
+    if (isSpan(command) && selectedMode.value == "press") {
+      return;
+    } else if (isSpan(command) && selectedMode.value == "timer") {
+      payload = buildSpannedCommand(command, 0.0);
     } else if (selectedMode.value == "press") {
       payload = buildStatedCommand(command, false); // Press mode
-    } else payload = buildTimedCommand(command, timerValue.value); // Timed mode
+    } else {
+      payload = buildTimedCommand(command, timerValue.value); // Timed mode
+    }
 
     // Send the command and wait the response
     processRequest(currentDevice.value.ip, "command", payload);

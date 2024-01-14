@@ -33,6 +33,7 @@ export const armwar = ($root.armwar = (() => {
    * @property {number} RELEASE=9 RELEASE value
    * @property {number} SET=10 SET value
    * @property {number} RESET=11 RESET value
+   * @property {number} STOP=12 STOP value
    */
   armwar.Command = (function () {
     const valuesById = {},
@@ -49,6 +50,7 @@ export const armwar = ($root.armwar = (() => {
     values[(valuesById[9] = "RELEASE")] = 9;
     values[(valuesById[10] = "SET")] = 10;
     values[(valuesById[11] = "RESET")] = 11;
+    values[(valuesById[12] = "STOP")] = 12;
     return values;
   })();
 
@@ -1434,6 +1436,7 @@ export const armwar = ($root.armwar = (() => {
           case 9:
           case 10:
           case 11:
+          case 12:
             break;
         }
       if (message.duration != null && message.hasOwnProperty("duration"))
@@ -1507,6 +1510,10 @@ export const armwar = ($root.armwar = (() => {
         case "RESET":
         case 11:
           message.command = 11;
+          break;
+        case "STOP":
+        case 12:
+          message.command = 12;
           break;
       }
       if (object.duration != null) message.duration = object.duration | 0;
@@ -1963,6 +1970,7 @@ export const armwar = ($root.armwar = (() => {
           case 9:
           case 10:
           case 11:
+          case 12:
             break;
         }
       if (message.start != null && message.hasOwnProperty("start"))
@@ -2036,6 +2044,10 @@ export const armwar = ($root.armwar = (() => {
         case "RESET":
         case 11:
           message.command = 11;
+          break;
+        case "STOP":
+        case 12:
+          message.command = 12;
           break;
       }
       if (object.start != null) message.start = Boolean(object.start);
@@ -2260,6 +2272,7 @@ export const armwar = ($root.armwar = (() => {
           case 9:
           case 10:
           case 11:
+          case 12:
             break;
         }
       if (message.span != null && message.hasOwnProperty("span"))
@@ -2332,6 +2345,10 @@ export const armwar = ($root.armwar = (() => {
         case "RESET":
         case 11:
           message.command = 11;
+          break;
+        case "STOP":
+        case 12:
+          message.command = 12;
           break;
       }
       if (object.span != null) message.span = Number(object.span);

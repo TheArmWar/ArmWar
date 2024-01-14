@@ -18,6 +18,7 @@ enum Command {
   RELEASE = 9;
   SET = 10;
   RESET = 11;
+  STOP = 12;
 }
 
 /** A message containing the response to a command. */
