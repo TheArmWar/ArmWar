@@ -11,6 +11,7 @@ import { Toaster, ToastType } from "./scripts/toaster/toaster.js";
 import {
   buildTimedCommand,
   buildStatedCommand,
+  buildSpannedCommand,
   buildTimedSequence,
   buildConnectCommand,
   buildDisconnectCommand,
@@ -18,9 +19,8 @@ import {
 
 // Imports requests
 import { RequestStatus, request } from "./scripts/requests/requests.js";
+import { armwar } from "./scripts/protocol/armwar";
 /*----------------------------------------------------------------------------*/
-var protocol = null;
-
 const allSequences = ref([]);
 const allDevices = ref([]);
 
@@ -139,8 +139,11 @@ const handleCommandPressed = (command, image) => {
   if (!isRecording.value) {
     if (!isDeviceSelected(currentDevice.value)) return;
 
-    // Build a payload matching a start stated command
-    const payload = buildStatedCommand(command, true);
+    // Build a payload based on the mode
+    let payload = "";
+    if (command == armwar.Command.SET || command == armwar.Command.RESET)
+      payload = buildSpannedCommand(command, 0.0);
+    else payload = buildStatedCommand(command, true);
 
     // Send the command and wait the response
     processRequest(currentDevice.value.ip, "command", payload);
@@ -167,10 +170,13 @@ const handleCommandReleased = (command, image) => {
     if (!isDeviceSelected(currentDevice.value)) return;
 
     // Build a payload based on the selected mode
-    const payload =
-      selectedMode.value == "press"
-        ? buildStatedCommand(command, false) // Press mode
-        : buildTimedCommand(command, timerValue.value); // Timed mode
+    let payload = "";
+    if (command == armwar.Command.SET || command == armwar.Command.RESET) {
+      if (selectedMode.value == "press") return;
+      else payload = buildSpannedCommand(command, 0.0);
+    } else if (selectedMode.value == "press") {
+      payload = buildStatedCommand(command, false); // Press mode
+    } else payload = buildTimedCommand(command, timerValue.value); // Timed mode
 
     // Send the command and wait the response
     processRequest(currentDevice.value.ip, "command", payload);

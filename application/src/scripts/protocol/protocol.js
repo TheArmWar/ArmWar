@@ -28,6 +28,18 @@ function _buildStatedCommand(command, start) {
 }
 
 /**
+ * @function _buildSpannedCommand
+ * @param {armwar.Command} command
+ * @param {float} span
+ * @returns armwar.SpannedCommand
+ */
+function _buildSpannedCommand(command, span) {
+  return armwar.SpannedCommand.create({
+    command: command,
+    span: span,
+  });
+}
+/**
  *
  * @param {String} type of one of the possible ArmCommand
  * @param {armwar.[TimedCommand, StatedCommand, TimedSequence]} value (an armwar payload)
@@ -61,6 +73,20 @@ export function buildStatedCommand(command, start) {
   const statedCommand = _buildStatedCommand(command, start);
 
   return _encodeArmCommand("statedCommand", statedCommand);
+}
+
+/**
+ * @function buildSpannedCommand
+ * @param {armwar.Command} command
+ * @param {float} span
+ * @returns Uint8Array of bytes (encoded payload) containing an ArmCommand that wraps a SpannedCommand
+ */
+export function buildSpannedCommand(command, span) {
+  console.log("Span: ", command);
+
+  const spannedCommand = _buildSpannedCommand(command, span);
+
+  return _encodeArmCommand("spannedCommand", spannedCommand);
 }
 
 /**
