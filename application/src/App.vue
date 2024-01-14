@@ -38,6 +38,33 @@ const timerValue = ref(1000);
 const toast = ref("");
 
 /*----------------------------------------------------------------------------*/
+async function disconnect(device) {
+  const disconnectCommand = buildDisconnectCommand();
+  const disconnected = await processRequest(
+    device.ip,
+    "logout",
+    disconnectCommand,
+  );
+
+  if (disconnected) {
+    device.connected = false;
+    currentDevice.value = "";
+  }
+
+  return disconnected;
+}
+
+async function connect(device) {
+  const connectCommand = buildConnectCommand();
+  const connected = await processRequest(device.ip, "login", connectCommand);
+
+  if (connected) {
+    device.connected = true;
+    currentDevice.value = device;
+  }
+  return connected;
+}
+
 /**
  * @function processRequest Wraps the request to avoid telling the toast each time
  * @param {String} ip
@@ -52,7 +79,15 @@ async function processRequest(ip, endpoint, payload) {
     toast.value.display(ToastType.Success, "Command success");
     return true;
   } else if (result.result == RequestStatus.ERROR) {
-    toast.value.display(ToastType.Error, "Command error: " + result.message);
+    if (result.message == "You are not connected to the arm.") {
+      toast.value.display(
+        ToastType.Error,
+        "Not connected to the arm anymore, disconnecting... ",
+      );
+      currentDevice.value.connected = false;
+      currentDevice.value = "";
+    } else
+      toast.value.display(ToastType.Error, "Command error: " + result.message);
     return false;
   } else {
     toast.value.display(ToastType.Error, "Command failed: " + result.message);
@@ -224,17 +259,7 @@ const handleDeviceClicked = async (deviceId) => {
 
   // Disconnect if the clicked device is connected
   if (device.connected) {
-    const disconnectCommand = buildDisconnectCommand();
-    const disconnected = await processRequest(
-      device.ip,
-      "logout",
-      disconnectCommand,
-    );
-
-    if (disconnected) {
-      device.connected = false;
-      currentDevice.value = "";
-    }
+    await disconnect(device);
   }
 
   // Device is not already connected so disconnect the previous connected device and connect the clicked device
@@ -245,23 +270,10 @@ const handleDeviceClicked = async (deviceId) => {
 
     // Check if there is an already connected device
     if (alreadyConnectedDevice != null) {
-      const disconnectCommand = buildDisconnectCommand();
-      const disconnected = await processRequest(
-        alreadyConnectedDevice.ip,
-        "logout",
-        disconnectCommand,
-      );
-
-      if (disconnected) alreadyConnectedDevice.connected = false;
+      await disconnect(alreadyConnectedDevice);
     }
 
-    const connectCommand = buildConnectCommand();
-    const connected = await processRequest(device.ip, "login", connectCommand);
-
-    if (connected) {
-      device.connected = true;
-      currentDevice.value = device;
-    }
+    await connect(device);
   }
 };
 
