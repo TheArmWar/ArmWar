@@ -45,6 +45,53 @@ bool decode_command(armwar_ArmCommand* cmd, uint8_t* buffer, size_t size)
     return status;
 }
 
+
+bool processTimedCommand(pb_istream_t* stream, const pb_field_t* field,
+                         void** arg)
+{
+    armwar_TimedCommand cmd = armwar_TimedCommand_init_zero;
+
+    Serial.println("Processing timedCommand");
+
+    if (!pb_decode(stream, armwar_TimedCommand_fields, &cmd))
+    {
+        Serial.println("Failed to decode timedCommand: ");
+        Serial.println(stream->errmsg);
+        return false;
+    }
+
+    Serial.println("Decoded timedCommand: ");
+    Serial.println(cmd.command);
+    Serial.println(cmd.duration);
+
+    command(cmd, *g_motors);
+
+    return true;
+}
+
+bool processSpannedCommand(pb_istream_t* stream, const pb_field_t* field,
+                         void** arg)
+{
+    armwar_SpannedCommand cmd = armwar_SpannedCommand_init_zero;
+
+    Serial.println("Processing SpannedCommand");
+
+    if (!pb_decode(stream, armwar_SpannedCommand_fields, &cmd))
+    {
+        Serial.println("Failed to decode SpannedCommand: ");
+        Serial.println(stream->errmsg);
+        return false;
+    }
+
+    Serial.println("Decoded SpannedCommand: ");
+    Serial.println(cmd.command);
+    Serial.println(cmd.span);
+
+    command(cmd, *g_motors);
+
+    return true;
+}
+
 /**
  * @brief Encode a string to the current stream
  *
@@ -260,6 +307,10 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
     bool success;
     std::string errorMessage{ "" };
 
+    // Initialize the cmd callbacks
+    cmd.timed_sequence.command.funcs.decode = &processTimedCommand;
+    cmd.spanned_sequence.command.funcs.decode = &processSpannedCommand;
+
     buffer = (uint8_t*)malloc(SERVER_BUFFER_SIZE);
     buf_size = SERVER_BUFFER_SIZE;
     buf_len = 0;
@@ -300,39 +351,20 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
     }
 
     // Call the correct api depending on the command type
-    switch (cmd.which_command)
-    {
-    case armwar_ArmCommand_timed_command_tag:
+    if (cmd.has_timed_command) {
         Serial.println("Received Timed command");
-        command(cmd.command.timed_command, *g_motors);
-        break;
-    case armwar_ArmCommand_timed_sequence_tag:
-        Serial.println("Received Timed sequence");
-        // TODO: need api Timed sequence handler
-        break;
-    case armwar_ArmCommand_spanned_command_tag:
+        command(cmd.timed_command, *g_motors);
+    } else if (cmd.has_spanned_command) {
         Serial.println("Received Spanned command");
-        command(cmd.command.spanned_command, *g_motors);
-        break;
-    case armwar_ArmCommand_spanned_sequence_tag:
-        Serial.println("Received Spanned sequence");
-        // TODO: need api Spanned sequence handler
-        break;
-    case armwar_ArmCommand_stated_command_tag:
+        command(cmd.spanned_command, *g_motors);
+    } else if (cmd.has_stated_command) {
         Serial.print("Received Stated command: ");
-        if (cmd.command.stated_command.start)
+        if (cmd.stated_command.start)
             Serial.println("Start");
         else
             Serial.println("Stop");
 
-        command(cmd.command.stated_command, *g_motors);
-        break;
-    default:
-        Serial.println("Unknown command type: ");
-        Serial.println(cmd.which_command);
-        success = false;
-        errorMessage = "Unknown command type.";
-        break;
+        command(cmd.stated_command, *g_motors);
     }
 
     free(buffer);
