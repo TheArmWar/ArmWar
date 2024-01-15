@@ -17,6 +17,9 @@ Motors::Motors(std::initializer_list<uint8_t> pins)
 
     // Create and initialize the base position vector
     this->base_pos = std::vector<uint16_t>(4, SERVO_MID);
+
+    // Boolean to know if motors should move or not
+    this->disabled = false;
 }
 
 /**
@@ -48,6 +51,9 @@ uint16_t Motors::getPos(uint8_t n)
  */
 Motors::Status Motors::setPos(uint8_t n, uint16_t pos)
 {
+    if (this->disabled)
+        return Motors::Status::CANCEL;
+
     if (pos < SERVO_MIN)
         pos = SERVO_MIN;
     else if (pos > SERVO_MAX)
@@ -65,6 +71,9 @@ Motors::Status Motors::setPos(uint8_t n, uint16_t pos)
  */
 Motors::Status Motors::setPosPlier(uint8_t n, uint16_t pos)
 {
+    if (this->disabled)
+        return Motors::Status::CANCEL;
+
     if (pos < SERVO_PLIER_MIN)
         pos = SERVO_PLIER_MIN;
     else if (pos > SERVO_PLIER_MAX)
@@ -140,4 +149,28 @@ void Motors::setBasePos(uint8_t n)
 Motors::Status Motors::resetBasePos(uint8_t n)
 {
     return this->setPos(n, this->base_pos[n]);
+}
+
+/**
+ * Disable the motors, motors won't be able to move
+ */
+void Motors::disable()
+{
+    this->disabled = true;
+}
+
+/**
+ * Start the motors
+ */
+void Motors::enable()
+{
+    this->disabled = false;
+}
+
+/**
+ * Getter to know if motors are disabled
+ */
+bool Motors::isDisabled()
+{
+    return this->disabled;
 }

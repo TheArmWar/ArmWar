@@ -124,7 +124,7 @@ const handleTimerChanged = (value) => {
           :image="stop_icon"
           @button-mousedown="handleButtonMousedown"
           @button-mouseup="handleButtonMouseup"
-          :command="armwar.Command.SET"
+          :command="armwar.Command.STOP"
         />
       </div>
     </div>

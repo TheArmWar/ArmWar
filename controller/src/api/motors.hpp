@@ -20,6 +20,7 @@ public:
     {
         SUCCESS = 0,
         ERROR = 1,
+        CANCEL = 2, // Motor disabled
     };
 
     /**
@@ -106,9 +107,24 @@ public:
      */
     Motors::Status resetBasePos(uint8_t n);
 
-    std::vector<uint16_t> base_pos;
+    /**
+     * Disable the motors, motors won't be able to move
+     */
+    void disable();
+
+    /**
+     * Start the motors
+     */
+    void enable();
+
+    /**
+     * Getter to know if motors are disabled
+     */
+    bool isDisabled();
 
 private:
     Adafruit_PWMServoDriver pwm_servo_driver;
     std::vector<uint8_t> motor_pins;
+    std::vector<uint16_t> base_pos;
+    bool disabled;
 };
