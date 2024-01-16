@@ -32,3 +32,27 @@ int command(armwar_SpannedCommand command, Motors& motors);
  * @return 0 if success, 1 if error, -1 if command not found
  */
 int command(armwar_TimedCommand command, Motors& motors);
+
+/**
+ * Parse a Timed Sequence command and execute each the command during the given
+ * duration of each command.
+ * @param sequence: The commands to execute
+ * @param motors: the motors object
+ * @param busy: Reference to a boolean that is set to false when the sequence
+ * ends.
+ * @return 0 if success, 1 if error, -1 if command not found
+ */
+int command(std::vector<armwar_TimedCommand> sequence, Motors& motors,
+            bool& busy);
+
+/**
+ * Parse a Span Sequence command and execute each the command during the
+ * given duration of each command.
+ * @param sequence: The commands to execute
+ * @param motors: the motors object
+ * @param busy: Reference to a boolean that is set to false when the sequence
+ * ends.
+ * @return 0 if success, 1 if error, -1 if command not found
+ */
+int command(std::vector<armwar_SpannedCommand> sequence, Motors& motors,
+            bool& busy);

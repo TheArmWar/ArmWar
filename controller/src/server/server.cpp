@@ -46,6 +46,76 @@ bool decode_command(armwar_ArmCommand* cmd, uint8_t* buffer, size_t size)
 }
 
 /**
+ * @brief Callback to use with nanopb to decode a TimedCommandSequence.
+ *  Add the decoded TimedCommand to the vector of armwar_TimedCommand
+ *
+ * @param stream
+ * @param field
+ * @param arg Takes a vector of armwar_TimedCommand as argument
+ * @return true
+ * @return false
+ */
+bool processTimedCommand(pb_istream_t* stream, const pb_field_t* field,
+                         void** arg)
+{
+    armwar_TimedCommand cmd = armwar_TimedCommand_init_zero;
+    std::vector<armwar_TimedCommand>* timedCommands =
+        (std::vector<armwar_TimedCommand>*)*arg;
+
+    Serial.println("Processing timedCommand");
+
+    if (!pb_decode(stream, armwar_TimedCommand_fields, &cmd))
+    {
+        Serial.println("Failed to decode timedCommand: ");
+        Serial.println(stream->errmsg);
+        return false;
+    }
+
+    Serial.println("Decoded timedCommand: ");
+    Serial.println(cmd.command);
+    Serial.println(cmd.duration);
+
+    timedCommands->push_back(cmd);
+
+    return true;
+}
+
+/**
+ * @brief Callback to use with nanopb to decode a SpannedCommandSequence.
+ *  Add the decoded SpannedCommand to the vector of armwar_SpannedCommand
+ *
+ * @param stream
+ * @param field
+ * @param arg Takes a vector of armwar_SpannedCommand as argument
+ * @return true
+ * @return false
+ */
+bool processSpannedCommand(pb_istream_t* stream, const pb_field_t* field,
+                           void** arg)
+{
+    armwar_SpannedCommand cmd = armwar_SpannedCommand_init_zero;
+    std::vector<armwar_SpannedCommand>* spannedCommands =
+        (std::vector<armwar_SpannedCommand>*)*arg;
+
+    Serial.println("Processing SpannedCommand");
+
+    if (!pb_decode(stream, armwar_SpannedCommand_fields, &cmd))
+    {
+        Serial.println("Failed to decode SpannedCommand: ");
+        Serial.println(stream->errmsg);
+        return false;
+    }
+
+    Serial.println("Decoded SpannedCommand: ");
+    Serial.println(cmd.command);
+    Serial.println(cmd.span);
+
+    spannedCommands->push_back(cmd);
+
+    return true;
+}
+
+/**
  * @brief Encode a string to the current stream
  *
  * @param stream The stream to write to
@@ -151,6 +221,7 @@ void serverSetup(HTTPServer* server, Motors* motors)
         new ResourceNode("/login", "POST", &handleLogin);
     ResourceNode* nodeLogoutRoot =
         new ResourceNode("/logout", "POST", &handleLogout);
+    ResourceNode* nodeStopRoot = new ResourceNode("/stop", "POST", &handleStop);
 
     // Register the services
     server->addMiddleware(&middlewareAuth);
@@ -158,8 +229,26 @@ void serverSetup(HTTPServer* server, Motors* motors)
     server->registerNode(nodePostRoot);
     server->registerNode(nodeLoginRoot);
     server->registerNode(nodeLogoutRoot);
+    server->registerNode(nodeStopRoot);
 
     server->start();
+}
+
+void handleStop(HTTPRequest* req, HTTPResponse* res)
+{
+    armwar_CommandResponse cmdResponse = armwar_CommandResponse_init_zero;
+    static armwar_SpannedCommand cmd = { .command = armwar_Command_STOP,
+                                         .span = 0 };
+    std::string message = "The arm has been stopped.";
+
+    if (command(cmd, *g_motors) == 0)
+    {
+        send_response(res, true, &message);
+        return;
+    }
+
+    message = "The arm failed to stop.";
+    send_response(res, false, &message);
 }
 
 /**
@@ -253,12 +342,28 @@ void handleLogout(HTTPRequest* req, HTTPResponse* res)
  */
 void handleCommand(HTTPRequest* req, HTTPResponse* res)
 {
+    static bool busy = false;
     armwar_ArmCommand cmd = armwar_ArmCommand_init_zero;
     uint8_t* buffer;
     size_t buf_size;
     size_t buf_len;
     bool success;
     std::string errorMessage{ "" };
+
+    if (busy)
+    {
+        errorMessage = "The arm is busy.";
+        send_response(res, false, &errorMessage);
+        return;
+    }
+
+    // Initialize the cmd callbacks
+    std::vector<armwar_TimedCommand> timedCommands;
+    std::vector<armwar_SpannedCommand> spannedCommands;
+    cmd.timed_sequence.command.funcs.decode = &processTimedCommand;
+    cmd.timed_sequence.command.arg = &timedCommands;
+    cmd.spanned_sequence.command.funcs.decode = &processSpannedCommand;
+    cmd.spanned_sequence.command.arg = &spannedCommands;
 
     buffer = (uint8_t*)malloc(SERVER_BUFFER_SIZE);
     buf_size = SERVER_BUFFER_SIZE;
@@ -300,41 +405,50 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
     }
 
     // Call the correct api depending on the command type
-    switch (cmd.which_command)
+    if (cmd.has_timed_command)
     {
-    case armwar_ArmCommand_timed_command_tag:
         Serial.println("Received Timed command");
-        command(cmd.command.timed_command, *g_motors);
-        break;
-    case armwar_ArmCommand_timed_sequence_tag:
-        Serial.println("Received Timed sequence");
-        // TODO: need api Timed sequence handler
-        break;
-    case armwar_ArmCommand_spanned_command_tag:
+        success = command(cmd.timed_command, *g_motors) == 0;
+    }
+    else if (cmd.has_spanned_command)
+    {
         Serial.println("Received Spanned command");
-        command(cmd.command.spanned_command, *g_motors);
-        break;
-    case armwar_ArmCommand_spanned_sequence_tag:
-        Serial.println("Received Spanned sequence");
-        // TODO: need api Spanned sequence handler
-        break;
-    case armwar_ArmCommand_stated_command_tag:
+        success = command(cmd.spanned_command, *g_motors) == 0;
+    }
+    else if (cmd.has_stated_command)
+    {
         Serial.print("Received Stated command: ");
-        if (cmd.command.stated_command.start)
+        if (cmd.stated_command.start)
             Serial.println("Start");
         else
             Serial.println("Stop");
 
-        command(cmd.command.stated_command, *g_motors);
-        break;
-    default:
-        Serial.println("Unknown command type: ");
-        Serial.println(cmd.which_command);
-        success = false;
-        errorMessage = "Unknown command type.";
-        break;
+        success = command(cmd.stated_command, *g_motors) == 0;
+    }
+    else if (cmd.has_timed_sequence)
+    {
+        Serial.println("Received Timed sequence");
+        success = command(timedCommands, *g_motors, busy) == 0;
+        if (success)
+            busy = true;
+    }
+    else if (cmd.has_spanned_sequence)
+    {
+        Serial.println("Received Spanned sequence");
+        success = command(spannedCommands, *g_motors, busy) == 0;
+        if (success)
+            busy = true;
+    }
+    else
+    {
+        errorMessage = "The command is not implemented.";
+        send_response(res, false, &errorMessage);
+        free(buffer);
+        return;
     }
 
     free(buffer);
+    if (success)
+        errorMessage = "The command failed.";
     send_response(res, success, &errorMessage);
 }
