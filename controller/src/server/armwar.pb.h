@@ -106,14 +106,16 @@ typedef struct _armwar_SpannedCommandSequence {
 } armwar_SpannedCommandSequence;
 
 typedef struct _armwar_ArmCommand {
-    pb_size_t which_command;
-    union {
-        armwar_TimedCommand timed_command;
-        armwar_TimedCommandSequence timed_sequence;
-        armwar_SpannedCommand spanned_command;
-        armwar_SpannedCommandSequence spanned_sequence;
-        armwar_StatedCommand stated_command;
-    } command;
+    bool has_timed_command;
+    armwar_TimedCommand timed_command;
+    bool has_timed_sequence;
+    armwar_TimedCommandSequence timed_sequence;
+    bool has_spanned_command;
+    armwar_SpannedCommand spanned_command;
+    bool has_spanned_sequence;
+    armwar_SpannedCommandSequence spanned_sequence;
+    bool has_stated_command;
+    armwar_StatedCommand stated_command;
 } armwar_ArmCommand;
 
 
@@ -152,7 +154,7 @@ extern "C" {
 #define armwar_StatedCommand_init_default        {_armwar_Command_MIN, 0}
 #define armwar_SpannedCommand_init_default       {_armwar_Command_MIN, 0}
 #define armwar_SpannedCommandSequence_init_default {{{NULL}, NULL}}
-#define armwar_ArmCommand_init_default           {0, {armwar_TimedCommand_init_default}}
+#define armwar_ArmCommand_init_default           {false, armwar_TimedCommand_init_default, false, armwar_TimedCommandSequence_init_default, false, armwar_SpannedCommand_init_default, false, armwar_SpannedCommandSequence_init_default, false, armwar_StatedCommand_init_default}
 #define armwar_CommandResponse_init_zero         {0, {{NULL}, NULL}}
 #define armwar_ArmState_init_zero                {0, 0, 0, 0, 0}
 #define armwar_ArmAvailability_init_zero         {0, false, armwar_ArmState_init_zero}
@@ -163,7 +165,7 @@ extern "C" {
 #define armwar_StatedCommand_init_zero           {_armwar_Command_MIN, 0}
 #define armwar_SpannedCommand_init_zero          {_armwar_Command_MIN, 0}
 #define armwar_SpannedCommandSequence_init_zero  {{{NULL}, NULL}}
-#define armwar_ArmCommand_init_zero              {0, {armwar_TimedCommand_init_zero}}
+#define armwar_ArmCommand_init_zero              {false, armwar_TimedCommand_init_zero, false, armwar_TimedCommandSequence_init_zero, false, armwar_SpannedCommand_init_zero, false, armwar_SpannedCommandSequence_init_zero, false, armwar_StatedCommand_init_zero}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define armwar_CommandResponse_success_tag       1
@@ -257,18 +259,18 @@ X(a, CALLBACK, REPEATED, MESSAGE,  command,           1)
 #define armwar_SpannedCommandSequence_command_MSGTYPE armwar_SpannedCommand
 
 #define armwar_ArmCommand_FIELDLIST(X, a) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (command,timed_command,command.timed_command),   1) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (command,timed_sequence,command.timed_sequence),   2) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (command,spanned_command,command.spanned_command),   3) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (command,spanned_sequence,command.spanned_sequence),   4) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (command,stated_command,command.stated_command),   5)
+X(a, STATIC,   OPTIONAL, MESSAGE,  timed_command,     1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  timed_sequence,    2) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  spanned_command,   3) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  spanned_sequence,   4) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  stated_command,    5)
 #define armwar_ArmCommand_CALLBACK NULL
 #define armwar_ArmCommand_DEFAULT NULL
-#define armwar_ArmCommand_command_timed_command_MSGTYPE armwar_TimedCommand
-#define armwar_ArmCommand_command_timed_sequence_MSGTYPE armwar_TimedCommandSequence
-#define armwar_ArmCommand_command_spanned_command_MSGTYPE armwar_SpannedCommand
-#define armwar_ArmCommand_command_spanned_sequence_MSGTYPE armwar_SpannedCommandSequence
-#define armwar_ArmCommand_command_stated_command_MSGTYPE armwar_StatedCommand
+#define armwar_ArmCommand_timed_command_MSGTYPE armwar_TimedCommand
+#define armwar_ArmCommand_timed_sequence_MSGTYPE armwar_TimedCommandSequence
+#define armwar_ArmCommand_spanned_command_MSGTYPE armwar_SpannedCommand
+#define armwar_ArmCommand_spanned_sequence_MSGTYPE armwar_SpannedCommandSequence
+#define armwar_ArmCommand_stated_command_MSGTYPE armwar_StatedCommand
 
 extern const pb_msgdesc_t armwar_CommandResponse_msg;
 extern const pb_msgdesc_t armwar_ArmState_msg;

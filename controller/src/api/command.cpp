@@ -1,6 +1,7 @@
 #include "command.hpp"
 
 #include <thread>
+#include <vector>
 
 #include "../config/config.hpp"
 
@@ -112,6 +113,60 @@ int command(armwar_TimedCommand command, Motors& motors)
             delay(SERVO_SPEED);
 
             current = millis();
+        }
+    }).detach();
+
+    return 0;
+}
+
+/**
+ * Parse a Timed Sequence command and execute each the command during the given
+ * duration of each command.
+ * @param sequence: The commands to execute
+ * @param motors: the motors object
+ * @return 0 if success, 1 if error, -1 if command not found
+ */
+int command(std::vector<armwar_TimedCommand> sequence, Motors& motors)
+{
+    std::thread([sequence, motors]() mutable {
+        for (armwar_TimedCommand command : sequence)
+        {
+            func fun = parse_command(command.command);
+            int start = millis();
+            int current = millis();
+
+            while (current - start < command.duration)
+            {
+                fun(motors, 1);
+
+                delay(SERVO_SPEED);
+
+                current = millis();
+            }
+        }
+    }).detach();
+
+    return 0;
+}
+
+/**
+ * Parse a Span Sequence command and execute each the command during the given
+ * duration of each command.
+ * @param sequence: The commands to execute
+ * @param motors: the motors object
+ * @return 0 if success, 1 if error, -1 if command not found
+ */
+int command(std::vector<armwar_SpannedCommand> sequence, Motors& motors)
+{
+    std::thread([sequence, motors]() mutable {
+        for (armwar_SpannedCommand command : sequence)
+        {
+            func fun = parse_command(command.command);
+
+            if (fun == NULL)
+                return -1;
+
+            fun(motors, command.span);
         }
     }).detach();
 
