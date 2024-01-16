@@ -46,10 +46,21 @@ bool decode_command(armwar_ArmCommand* cmd, uint8_t* buffer, size_t size)
 }
 
 
+/**
+ * @brief Callback to use with nanopb to decode a TimedCommandSequence.
+ *  Add the decoded TimedCommand to the vector of armwar_TimedCommand
+ * 
+ * @param stream 
+ * @param field 
+ * @param arg Takes a vector of armwar_TimedCommand as argument
+ * @return true 
+ * @return false 
+ */
 bool processTimedCommand(pb_istream_t* stream, const pb_field_t* field,
                          void** arg)
 {
     armwar_TimedCommand cmd = armwar_TimedCommand_init_zero;
+    std::vector<armwar_TimedCommand>* timedCommands = (std::vector<armwar_TimedCommand>*)*arg;
 
     Serial.println("Processing timedCommand");
 
@@ -64,15 +75,26 @@ bool processTimedCommand(pb_istream_t* stream, const pb_field_t* field,
     Serial.println(cmd.command);
     Serial.println(cmd.duration);
 
-    command(cmd, *g_motors);
+    timedCommands->push_back(cmd);
 
     return true;
 }
 
+/**
+ * @brief Callback to use with nanopb to decode a SpannedCommandSequence.
+ *  Add the decoded SpannedCommand to the vector of armwar_SpannedCommand
+ * 
+ * @param stream 
+ * @param field 
+ * @param arg Takes a vector of armwar_SpannedCommand as argument
+ * @return true 
+ * @return false 
+ */
 bool processSpannedCommand(pb_istream_t* stream, const pb_field_t* field,
                          void** arg)
 {
     armwar_SpannedCommand cmd = armwar_SpannedCommand_init_zero;
+    std::vector<armwar_SpannedCommand>* spannedCommands = (std::vector<armwar_SpannedCommand>*)*arg;
 
     Serial.println("Processing SpannedCommand");
 
@@ -87,7 +109,7 @@ bool processSpannedCommand(pb_istream_t* stream, const pb_field_t* field,
     Serial.println(cmd.command);
     Serial.println(cmd.span);
 
-    command(cmd, *g_motors);
+    spannedCommands->push_back(cmd);
 
     return true;
 }
@@ -308,8 +330,12 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
     std::string errorMessage{ "" };
 
     // Initialize the cmd callbacks
+    std::vector<armwar_TimedCommand> timedCommands;
+    std::vector<armwar_SpannedCommand> spannedCommands;
     cmd.timed_sequence.command.funcs.decode = &processTimedCommand;
+    cmd.timed_sequence.command.arg = &timedCommands;
     cmd.spanned_sequence.command.funcs.decode = &processSpannedCommand;
+    cmd.spanned_sequence.command.arg = &spannedCommands;
 
     buffer = (uint8_t*)malloc(SERVER_BUFFER_SIZE);
     buf_size = SERVER_BUFFER_SIZE;
@@ -365,6 +391,17 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
             Serial.println("Stop");
 
         command(cmd.stated_command, *g_motors);
+    } else if (cmd.has_timed_sequence) {
+        Serial.println("Received Timed sequence");
+        command(timedCommands, *g_motors);
+    } else if (cmd.has_spanned_sequence) {
+        Serial.println("Received Spanned sequence");
+        command(spannedCommands, *g_motors);
+    } else {
+        errorMessage = "The command is not implemented.";
+        send_response(res, false, &errorMessage);
+        free(buffer);
+        return;
     }
 
     free(buffer);
