@@ -339,12 +339,20 @@ void handleLogout(HTTPRequest* req, HTTPResponse* res)
  */
 void handleCommand(HTTPRequest* req, HTTPResponse* res)
 {
+    static bool busy = false;
     armwar_ArmCommand cmd = armwar_ArmCommand_init_zero;
     uint8_t* buffer;
     size_t buf_size;
     size_t buf_len;
     bool success;
     std::string errorMessage{ "" };
+
+    if (busy)
+    {
+        errorMessage = "The arm is busy.";
+        send_response(res, false, &errorMessage);
+        return;
+    }
 
     // Initialize the cmd callbacks
     std::vector<armwar_TimedCommand> timedCommands;
@@ -411,9 +419,13 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
     } else if (cmd.has_timed_sequence) {
         Serial.println("Received Timed sequence");
         success = command(timedCommands, *g_motors) == 0;
+        if (success)
+            busy = true;
     } else if (cmd.has_spanned_sequence) {
         Serial.println("Received Spanned sequence");
         success = command(spannedCommands, *g_motors) == 0;
+        if (success)
+            busy = true;
     } else {
         errorMessage = "The command is not implemented.";
         send_response(res, false, &errorMessage);
