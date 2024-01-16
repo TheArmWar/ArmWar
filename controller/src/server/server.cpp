@@ -220,6 +220,8 @@ void serverSetup(HTTPServer* server, Motors* motors)
         new ResourceNode("/login", "POST", &handleLogin);
     ResourceNode* nodeLogoutRoot =
         new ResourceNode("/logout", "POST", &handleLogout);
+    ResourceNode* nodeRoot =
+        new ResourceNode("/stop", "GET", &handleStop);
 
     // Register the services
     server->addMiddleware(&middlewareAuth);
@@ -230,6 +232,21 @@ void serverSetup(HTTPServer* server, Motors* motors)
 
     server->start();
 }
+
+handleStop(HTTPRequest* req, HTTPResponse* res)
+{
+    armwar_CommandResponse cmdResponse = armwar_CommandResponse_init_zero;
+    static armwar_SpannedCommand cmd = { .command = armwar_Command_STOP, .span = 0};
+    uint8_t respBuffer[SERVER_BUFFER_SIZE] = { 0 };
+    std::string message = "The arm has been stopped.";
+
+    if (command(cmd, *g_motors) == 0)
+        send_response(res, true, &message);
+
+    message = "The arm failed to stop.";
+    send_response(res, false, &message);
+}
+
 
 /**
  * @brief Handle the status request
@@ -379,10 +396,10 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
     // Call the correct api depending on the command type
     if (cmd.has_timed_command) {
         Serial.println("Received Timed command");
-        command(cmd.timed_command, *g_motors);
+        success = command(cmd.timed_command, *g_motors) == 0;
     } else if (cmd.has_spanned_command) {
         Serial.println("Received Spanned command");
-        command(cmd.spanned_command, *g_motors);
+        success = command(cmd.spanned_command, *g_motors) == 0;
     } else if (cmd.has_stated_command) {
         Serial.print("Received Stated command: ");
         if (cmd.stated_command.start)
@@ -390,13 +407,13 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
         else
             Serial.println("Stop");
 
-        command(cmd.stated_command, *g_motors);
+        success = command(cmd.stated_command, *g_motors) == 0;
     } else if (cmd.has_timed_sequence) {
         Serial.println("Received Timed sequence");
-        command(timedCommands, *g_motors);
+        success = command(timedCommands, *g_motors) == 0;
     } else if (cmd.has_spanned_sequence) {
         Serial.println("Received Spanned sequence");
-        command(spannedCommands, *g_motors);
+        success = command(spannedCommands, *g_motors) == 0;
     } else {
         errorMessage = "The command is not implemented.";
         send_response(res, false, &errorMessage);
@@ -405,5 +422,7 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
     }
 
     free(buffer);
+    if (success)
+        errorMessage = "The command failed.";
     send_response(res, success, &errorMessage);
 }
