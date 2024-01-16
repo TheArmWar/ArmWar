@@ -28,8 +28,9 @@
 #define SERVO_MID 305 // Mid position
 #define SERVO_ROTATE_90 170 // 90 degrees rotation
 
-#define SERVO_PLIER_MIN 250 // Min pos for plier motor
-#define SERVO_PLIER_MAX 262 // Max pos for plier motor
+#define SERVO_PLIER_MIN 215 // Min pos for plier motor
+#define SERVO_PLIER_MAX 360 // Max pos for plier motor
+#define SERVO_PLIER_MID 285 // Max pos for plier motor
 
 #define SERVO_OSC_FREQ 27000000 // ?
 #define SERVO_PWM_FREQ 50 // 50 Hz
