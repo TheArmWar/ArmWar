@@ -117,6 +117,12 @@ function handleRecordingTimer() {
 }
 
 /*----------------------------------------------------------------------------*/
+const handleStop = async () => {
+  if (!isDeviceSelected(currentDevice.value)) return;
+
+  await processRequest(currentDevice.value.ip, "stop", new Uint8Array());
+};
+
 const handleSequencePlay = (sequenceId) => {
   if (!isDeviceSelected(currentDevice.value)) return;
 
@@ -376,6 +382,7 @@ onMounted(async () => {
           :timerValue="timerValue"
           @button-mousedown="handleCommandPressed"
           @button-mouseup="handleCommandReleased"
+          @button-stop="handleStop"
           @mode-clicked="handleModeSwitch"
           @timer-changed="handleTimerChanged"
         />

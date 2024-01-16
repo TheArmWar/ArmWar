@@ -22,10 +22,13 @@ const { emit } = getCurrentInstance();
 const { selectedMode } = defineProps(["selectedMode", "timerValue"]);
 
 const handleButtonMousedown = (command, image) => {
-  emit("button-mousedown", command, image);
+  if (command == armwar.Command.STOP) emit("button-stop");
+  else emit("button-mousedown", command, image);
 };
 
 const handleButtonMouseup = (command, image) => {
+  if (command == armwar.Command.STOP) return;
+
   emit("button-mouseup", command, image);
 };
 

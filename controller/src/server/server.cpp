@@ -45,22 +45,22 @@ bool decode_command(armwar_ArmCommand* cmd, uint8_t* buffer, size_t size)
     return status;
 }
 
-
 /**
  * @brief Callback to use with nanopb to decode a TimedCommandSequence.
  *  Add the decoded TimedCommand to the vector of armwar_TimedCommand
- * 
- * @param stream 
- * @param field 
+ *
+ * @param stream
+ * @param field
  * @param arg Takes a vector of armwar_TimedCommand as argument
- * @return true 
- * @return false 
+ * @return true
+ * @return false
  */
 bool processTimedCommand(pb_istream_t* stream, const pb_field_t* field,
                          void** arg)
 {
     armwar_TimedCommand cmd = armwar_TimedCommand_init_zero;
-    std::vector<armwar_TimedCommand>* timedCommands = (std::vector<armwar_TimedCommand>*)*arg;
+    std::vector<armwar_TimedCommand>* timedCommands =
+        (std::vector<armwar_TimedCommand>*)*arg;
 
     Serial.println("Processing timedCommand");
 
@@ -83,18 +83,19 @@ bool processTimedCommand(pb_istream_t* stream, const pb_field_t* field,
 /**
  * @brief Callback to use with nanopb to decode a SpannedCommandSequence.
  *  Add the decoded SpannedCommand to the vector of armwar_SpannedCommand
- * 
- * @param stream 
- * @param field 
+ *
+ * @param stream
+ * @param field
  * @param arg Takes a vector of armwar_SpannedCommand as argument
- * @return true 
- * @return false 
+ * @return true
+ * @return false
  */
 bool processSpannedCommand(pb_istream_t* stream, const pb_field_t* field,
-                         void** arg)
+                           void** arg)
 {
     armwar_SpannedCommand cmd = armwar_SpannedCommand_init_zero;
-    std::vector<armwar_SpannedCommand>* spannedCommands = (std::vector<armwar_SpannedCommand>*)*arg;
+    std::vector<armwar_SpannedCommand>* spannedCommands =
+        (std::vector<armwar_SpannedCommand>*)*arg;
 
     Serial.println("Processing SpannedCommand");
 
@@ -220,8 +221,7 @@ void serverSetup(HTTPServer* server, Motors* motors)
         new ResourceNode("/login", "POST", &handleLogin);
     ResourceNode* nodeLogoutRoot =
         new ResourceNode("/logout", "POST", &handleLogout);
-    ResourceNode* nodeRoot =
-        new ResourceNode("/stop", "GET", &handleStop);
+    ResourceNode* nodeStopRoot = new ResourceNode("/stop", "POST", &handleStop);
 
     // Register the services
     server->addMiddleware(&middlewareAuth);
@@ -229,24 +229,27 @@ void serverSetup(HTTPServer* server, Motors* motors)
     server->registerNode(nodePostRoot);
     server->registerNode(nodeLoginRoot);
     server->registerNode(nodeLogoutRoot);
+    server->registerNode(nodeStopRoot);
 
     server->start();
 }
 
-handleStop(HTTPRequest* req, HTTPResponse* res)
+void handleStop(HTTPRequest* req, HTTPResponse* res)
 {
     armwar_CommandResponse cmdResponse = armwar_CommandResponse_init_zero;
-    static armwar_SpannedCommand cmd = { .command = armwar_Command_STOP, .span = 0};
-    uint8_t respBuffer[SERVER_BUFFER_SIZE] = { 0 };
+    static armwar_SpannedCommand cmd = { .command = armwar_Command_STOP,
+                                         .span = 0 };
     std::string message = "The arm has been stopped.";
 
     if (command(cmd, *g_motors) == 0)
+    {
         send_response(res, true, &message);
+        return;
+    }
 
     message = "The arm failed to stop.";
     send_response(res, false, &message);
 }
-
 
 /**
  * @brief Handle the status request
@@ -402,13 +405,18 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
     }
 
     // Call the correct api depending on the command type
-    if (cmd.has_timed_command) {
+    if (cmd.has_timed_command)
+    {
         Serial.println("Received Timed command");
         success = command(cmd.timed_command, *g_motors) == 0;
-    } else if (cmd.has_spanned_command) {
+    }
+    else if (cmd.has_spanned_command)
+    {
         Serial.println("Received Spanned command");
         success = command(cmd.spanned_command, *g_motors) == 0;
-    } else if (cmd.has_stated_command) {
+    }
+    else if (cmd.has_stated_command)
+    {
         Serial.print("Received Stated command: ");
         if (cmd.stated_command.start)
             Serial.println("Start");
@@ -416,17 +424,23 @@ void handleCommand(HTTPRequest* req, HTTPResponse* res)
             Serial.println("Stop");
 
         success = command(cmd.stated_command, *g_motors) == 0;
-    } else if (cmd.has_timed_sequence) {
+    }
+    else if (cmd.has_timed_sequence)
+    {
         Serial.println("Received Timed sequence");
-        success = command(timedCommands, *g_motors) == 0;
+        success = command(timedCommands, *g_motors, busy) == 0;
         if (success)
             busy = true;
-    } else if (cmd.has_spanned_sequence) {
+    }
+    else if (cmd.has_spanned_sequence)
+    {
         Serial.println("Received Spanned sequence");
-        success = command(spannedCommands, *g_motors) == 0;
+        success = command(spannedCommands, *g_motors, busy) == 0;
         if (success)
             busy = true;
-    } else {
+    }
+    else
+    {
         errorMessage = "The command is not implemented.";
         send_response(res, false, &errorMessage);
         free(buffer);

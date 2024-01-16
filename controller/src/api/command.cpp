@@ -124,26 +124,37 @@ int command(armwar_TimedCommand command, Motors& motors)
  * duration of each command.
  * @param sequence: The commands to execute
  * @param motors: the motors object
+ * @param busy: Reference to a boolean that is set to false when the sequence
+ * ends.
  * @return 0 if success, 1 if error, -1 if command not found
  */
-int command(std::vector<armwar_TimedCommand> sequence, Motors& motors)
+int command(std::vector<armwar_TimedCommand> sequence, Motors& motors,
+            bool& busy)
 {
-    std::thread([sequence, motors]() mutable {
+    std::thread([sequence, &motors, &busy]() mutable {
         for (armwar_TimedCommand command : sequence)
         {
             func fun = parse_command(command.command);
             int start = millis();
             int current = millis();
+            Motors::Status status = Motors::Status::SUCCESS;
 
             while (current - start < command.duration)
             {
-                fun(motors, 1);
+                status = fun(motors, 1);
+                // If motors are disabled, command should stop
+                if (status == Motors::Status::CANCEL)
+                {
+                    break;
+                }
 
                 delay(SERVO_SPEED);
 
                 current = millis();
             }
         }
+
+        busy = false;
     }).detach();
 
     return 0;
@@ -154,20 +165,31 @@ int command(std::vector<armwar_TimedCommand> sequence, Motors& motors)
  * duration of each command.
  * @param sequence: The commands to execute
  * @param motors: the motors object
+ * @param busy: Reference to a boolean that is set to false when the sequence
+ * ends.
  * @return 0 if success, 1 if error, -1 if command not found
  */
-int command(std::vector<armwar_SpannedCommand> sequence, Motors& motors)
+int command(std::vector<armwar_SpannedCommand> sequence, Motors& motors,
+            bool& busy)
 {
-    std::thread([sequence, motors]() mutable {
+    std::thread([sequence, &motors, &busy]() mutable {
         for (armwar_SpannedCommand command : sequence)
         {
             func fun = parse_command(command.command);
+            Motors::Status status = Motors::Status::SUCCESS;
 
             if (fun == NULL)
                 return -1;
 
-            fun(motors, command.span);
+            status = fun(motors, command.span);
+            // If motors are disabled, command should stop
+            if (status == Motors::Status::CANCEL)
+            {
+                break;
+            }
         }
+
+        busy = false;
     }).detach();
 
     return 0;
