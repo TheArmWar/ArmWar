@@ -41,7 +41,7 @@ Motors::Status set(Motors& motors, int discarded)
     Motors::Status res = Motors::Status::SUCCESS;
 
     // All motors except the Pliers motor
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 5; i++)
         motors.setBasePos(i);
 
     return res;
@@ -58,7 +58,7 @@ Motors::Status reset(Motors& motors, int discarded)
     Motors::Status res = Motors::Status::SUCCESS;
 
     // All motors except the Pliers motor
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 5; i++)
     {
         res = motors.resetBasePos(i);
         if (res != Motors::Status::SUCCESS)
