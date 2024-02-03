@@ -6,12 +6,12 @@ Before commiting, please run `pre-commit install -t pre-commit -t commit-msg` to
 
 ## Application
 
-This project is a simple web application that allows to demonstrate how the application should communicate with the controller.
+This project is a simple web application that communicates with the controller backend to move the Arm.
 
 ### Dependencies
 
-- node
-- npm
+- node 20.0.0
+- npm 9.6.4
 
 ### Recommended IDE Setup
 
@@ -39,50 +39,68 @@ npm run build
 
 This project aims to build an ESP32 DO IT DEVKIT program that receives instructions from the ArmWar application and controlls the Arm.
 
-### Project setup
-
-To be able to compile and flash the controller, you will need to install and setup up several dependencies.
-
-- Arduino IDE
-- Adafruit PWM Servo Driver Library [v3.0.1]
-- ESP32_HTTPS_Server
-- Nanopb
+### Project Setup
 
 #### Arduino IDE
 
-Start by installing the last version of **Arduino IDE**. The way you install it is not important. Simply make sure that you have access to the libraries directory.
-Depending on the way you installed the IDE, the **libraries** directory should be located at: ~/Arduino/libraries.  
-Set the card type to `DOIT ESP32 DEVKIT V1`.
+To be able to compile and flash the controller, you will need to install the last version of **Arduino IDE**. The way you install is not important.
+Simply make sure that you have access to the libraries directory.
+Depending on the way you installed the IDE, the **libraries** directory should be located at: ~/Arduino/libraries.
+
+#### Arduino IDE Libraries
+
+The controller uses the following arduino libraries:
+
+- Adafruit PWM Servo Driver Library [v3.0.1]
+- Adafruit BusIO [v1.15.0]
+- ESP32_HTTPS_Server [v1.0.0]
+
+You can install those libraries from the library manager of Arduino IDE
 
 #### ESP32_HTTPS_Server
 
-This library is used to instantiate an HTTP server. Because of new versions of **ESP32** development package of **Arduino IDE**. This library do not compile anymore. There is a simple fix that
-consists of modifying the file **HTTPConnection.hpp** located at **"~/Arduino/libraries/ESP32_HTTPS_Server/src"**. Replace line **9** by the following one.
+You may encounter an issue while trying to compile the project. This compilation error may come from the ESP32_HTTPS_Server library.
+
+Try to use the following fix if you encounter the issue:
+
+Modify the file **HTTPConnection.hpp** located at **"~/Arduino/libraries/ESP32_HTTPS_Server/src"**. **Replace** line **9** by the following one.
 
 > #include <sha/sha_parallel_engine.h>
 
-Now, the library should compile without errors.
+This library is used to instantiate an HTTP server. Because of new versions of **ESP32** development package of **Arduino IDE**. This library do not compile anymore.
 
-#### Nanopb
-
-You have to install Nanopb from https://jpa.kapsi.fi/nanopb/download/. Select the latest linux version. Then, untar the downloaded directory where ever you want. Once this is done, create a new directory called **Nanopb** inside the libraries directory of Arduino IDE. Then, the following files should appear on the untar directory:
-
-- pb.h
-- pb_common.h
-- pb_common.c
-- pb_encode.h
-- pb_encode.c
-- pb_decode.h
-- pb_decode.c
-
-Copy all these files in the directory you've just created.
-Then, you should add the generator-bin directory of the untar directory to your **PATH**.
-
-### Wifi Setup
+#### Wifi Setup
 
 To be able to connect to wifi with the arm, you must create a "credentials.hpp"
-file which contains your credentials. An example is provided, simply copy it and
-replace the values with yours.
+file which contains your credentials in the **config** directory.
+
+An example is provided in the **examples** directory, simply copy it and replace the values with yours.
+
+## Protocol
+
+ArmWar is using protobuff to generate its communication protocol. This protocol
+is a way to format data as Json does. The protocol definition is located in a
+simple .proto file in the **protocols** directory. With this .proto file, we can
+generate code for different language to be able to serialize and deserialize data.
+
+### Controller protocol code
+
+To generate the controller code, you have to install Nanopb from https://jpa.kapsi.fi/nanopb/download/.
+Select the latest linux version. Then, untar the downloaded directory where ever you want. Once this is done, you
+should add the generator-bin directory of the untar directory to your **PATH**.
+
+> Nanopb is a lightweight implementation of protobuff for C language.
+
+### Application protocol code
+
+The application uses an npm library of protobuff. This library allows to generate
+static code for the protocol. (This library is installed when you run npm install)
+
+### Generator script
+
+We wrote a simple script that generates at the right place the code of our
+protocol for both application and controller.
+(You must have Nanopb and protobuff from npm installed)
 
 ### Documentation
 
