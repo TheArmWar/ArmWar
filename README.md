@@ -102,6 +102,8 @@ We wrote a simple script that generates at the right place the code of our
 protocol for both application and controller.
 (You must have Nanopb and protobuff from npm installed)
 
+The script is located in the **others** directory.
+
 ### Documentation
 
 #### Code
