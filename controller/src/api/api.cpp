@@ -27,7 +27,7 @@ Motors::Status mid(Motors& motors)
             return res;
     }
 
-    return res;
+    return motors.setPosPlierMid(4);
 }
 
 /**
@@ -269,9 +269,6 @@ Motors::Status grab(Motors& motors, int nb_degree)
     int grab_pos = motors.getPos(4);
     Motors::Status res = Motors::Status::SUCCESS;
 
-    Serial.print("Je grab [curr_pos: ");
-    Serial.print(grab_pos);
-    Serial.println("]");
     for (int i = 0; i < nb_degree; i++)
     {
         grab_pos += SERVO_UNIT;
@@ -293,10 +290,6 @@ Motors::Status release(Motors& motors, int nb_degree)
 {
     int release_pos = motors.getPos(4);
     Motors::Status res = Motors::Status::SUCCESS;
-
-    Serial.print("Je release [curr_pos: ");
-    Serial.print(release_pos);
-    Serial.println("]");
 
     for (int i = 0; i < nb_degree; i++)
     {

@@ -102,6 +102,17 @@ Motors::Status Motors::setPosPlierMin(uint8_t n)
 {
     return this->setPos(n, SERVO_PLIER_MIN);
 }
+
+/**
+ * Set the middle position of the motor "n"
+ * @param n: The nth motor of the pins list
+ * @return Motors::Status
+ */
+Motors::Status Motors::setPosPlierMid(uint8_t n)
+{
+    return this->setPos(n, SERVO_PLIER_MID);
+}
+
 /**
  * Set the maximal position of the motor "n"
  * @param n: The nth motor of the pins list

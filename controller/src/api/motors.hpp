@@ -74,6 +74,13 @@ public:
     Motors::Status setPosPlierMin(uint8_t n);
 
     /**
+     * Set the middle position of the motor "n"
+     * @param n: The nth motor of the pins list
+     * @return Motors::Status
+     */
+    Motors::Status setPosPlierMid(uint8_t n);
+
+    /**
      * Set the maximal position of the motor "n"
      * @param n: The nth motor of the pins list
      * @return Motors::Status
